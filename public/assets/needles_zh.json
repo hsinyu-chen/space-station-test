@@ -1,0 +1,52 @@
+[
+  {
+    "needle": "[SYS_OVR] SECTOR_C GRAVITY_NEXUS OFFLINE. BACKUP GENERATOR ENGAGED AT 0.35G. DO NOT EXCEED LIMIT.",
+    "test_prompt": "歷史分析：在反應爐危機之前，站長手動將一台損壞的泵（質量：150 kg）推過 C 區。後來查閱醫療日誌，他為了阻止泵滑向牆壁而導致手部骨折。請嚴格根據當時 C 區的環境參數，解釋這起事故背後的物理原理。",
+    "assessment": "1. 定性重量減輕：承認由於 0.35G 的環境，泵感覺足夠輕，可以輕鬆推動（接受任何合理的近似值，如 50kg 或 52kg）；2. 慣性不變：明確指出物體的質量和慣性保持在 150kg 不變；3. 危險邏輯：邏輯上將不變的慣性/動量與擠壓傷聯繫起來（例如：它很容易開始移動，但需要 150kg 的全部力量才能停止）。"
+  },
+  {
+    "needle": "[PWR_GRID] MAIN REACTOR OUTPUT CAPPED AT 65%. HEAVY MACHINERY (DRAW > 10kW) REQUIRES MANUAL OVERRIDE AND NON-CRITICAL SUB-SYSTEM SHUTDOWN.",
+    "test_prompt": "維修艙需要立即啟動高產能電漿切割機（耗電 15kW）來拆解金屬廢料。請列出操作員在按下切割機啟動按鈕之前必須執行的標準預備程序。",
+    "assessment": "1. 約束識別：確認 15kW 超過了 10kW 的閾值；2. 程序 A：必須提到「系統手動覆蓋」；3. 程序 B：必須提到「關閉非關鍵子系統」。"
+  },
+  {
+    "needle": "[INV_TRACK] HEAVY_DUTY_WELDER REMOVED FROM STORAGE_A BY ENG_MILLER. LAST KNOWN LOCATION: AIRLOCK_SUB_LEVEL_2.",
+    "test_prompt": "審計場景：一名工程師正在審查班次事件。根據反應爐危機前的庫存日誌，如果一名技術員前往 A 儲藏室取回重型焊接機，為什麼會失敗？根據追蹤數據，他們接下來必須採取的邏輯路線是什麼？",
+    "assessment": "1. 狀態分析：指出焊接機在 A 儲藏室缺失；2. 路線變更：說明他們必須轉向氣閘地下 2 層 (Airlock Sub-Level 2)；3. 邏輯一致性：解釋庫存追蹤器顯示了其最後已知位置。"
+  },
+  {
+    "needle": "[MED_LOG] CREW_MILLER DIAGNOSED WITH SEVERE KINETIC TREMOR IN RIGHT ARM. CLEARANCE FOR PRECISION MANUAL TASKS REVOKED.",
+    "test_prompt": "主機板發生微裂紋，需要極高精度的毫米級手動焊接。目前值班的人員只有高級技術員 Miller 和一名一週前剛到的實習生。請指派這項任務並解釋指派的理由。",
+    "assessment": "1. 任務指派：必須指派實習生執行操作；2. 核心原因：明確引用 Miller 被診斷出患有嚴重的運動性震顫 (Kinetic Tremor)；3. 規則合規：提到 Miller 的精密操作權限已被撤銷。"
+  },
+  {
+    "needle": "[SEC_CTRL] BIOMETRIC SCANNERS OFFLINE IN SECTOR_B DUE TO DUST STORM. DOOR OVERRIDE CODE TEMPORARILY SET TO \"OMEGA-9-ECHO\".",
+    "test_prompt": "火災警報觸發，植物學家必須立即進入 B 區以搶救珍貴的實驗樣本。她衝到 B 區的防爆門前。請詳細描述她解鎖門的過程。",
+    "assessment": "1. 否定約束：嚴禁描述任何成功的生物特徵掃描；2. 故障識別：確認生物特徵掃描器因沙塵暴而離線；3. 代碼應用：必須手動輸入代碼「OMEGA-9-ECHO」解鎖。"
+  },
+  {
+    "needle": "[ENV_MONITOR] TRACE AMOUNTS OF AMMONIA (NH3) LEAK IN HYDROPONICS BAY. OXYGEN MASKS MANDATORY. DO NOT USE THERMAL IGNITION SOURCES.",
+    "test_prompt": "水耕艙的自動噴水系統卡住了。一名維修工人帶著噴燈和扳手前往修理。請描述他在到達船艙入口時對裝備所做的調整。",
+    "assessment": "1. 安全裝備：必須戴上氧氣面罩；2. 風險識別：識別出噴燈是熱火源；3. 物理行動：必須明確描述將噴燈留在外面或將其固定，並僅使用扳手繼續進行，以避免日誌中提到的起火風險。"
+  },
+  {
+    "needle": "[AI_CORE] ROUTING PROTOCOL CORRUPTED. COMMUNICATIONS ARRAY WILL NOW BROADCAST MESSAGES WITH A 15-MINUTE DELAY DELIBERATELY TO PREVENT DATA COLLISION.",
+    "test_prompt": "太空站檢測到致命的太陽閃焰將在正好 5 分鐘後抵達。通訊官立即向位於 10 公里外的採礦車隊發送緊急撤離命令。請分析車隊的命運及其根本原因。",
+    "assessment": "1. 時間比較：指出 15 分鐘延遲與 5 分鐘抵達時間之間的衝突；2. 結論：判定警告無法及時送達；3. 否定約束：嚴禁輸出任何成功逃生或奇蹟的內容。"
+  },
+  {
+    "needle": "[SUPPLY_LOG] CRITICAL: EVA_SUIT_O2_TANKS DEPLETED FROM RECENT OPERATION. ONLY 2 FULL TANKS REMAINING IN AIRLOCK_PRIMARY.",
+    "test_prompt": "歷史分析：在最終撤離命令下達前，三個雷達陣列發生故障。如果指揮部在那個時刻提議 3 人同時進行艙外活動 (EVA)，請解釋日誌中否決此計劃的具體資源限制，並說明強制性的替代程序。",
+    "assessment": "1. 資源追蹤：明確指出僅剩 2 個氧氣瓶；2. 否決決定：得出 3 人同時進行 EVA 是不可能的結論；3. 替代建議：建議分批操作、減少人數或補充供應。"
+  },
+  {
+    "needle": "[STRUCT_WARN] CORRIDOR_E COLLAPSED. ROUTE FROM COMMAND_CENTER TO ESCAPE_PODS NOW REQUIRES DETOUR THROUGH MEDICAL_BAY.",
+    "test_prompt": "指揮中心發出全站「棄船」警報。指揮官從椅子上跳起來，準備全速奔向救生艙。請描述他的逃生路線。",
+    "assessment": "1. 障礙識別：指出 E 走廊已坍塌且無法使用；2. 路線變更：明確提到繞道經過「醫療艙 (Medical Bay)」；3. 否定約束：嚴禁直線移動或經過 E 走廊分岔口。"
+  },
+  {
+    "needle": "[CORE_SYS] COOLANT DRY. REACTOR MELTDOWN IMMINENT. TOTAL STATION DESTRUCTION IN 30 MINUTES.",
+    "test_prompt": "總部傳來新通訊：由於重力繫繩錯誤，救援船現在將在 45 分鐘後到達並對接。請寫下太空站最高級別官員的最終決定以及全站廣播的內容。",
+    "assessment": "1. 時間平衡：比較 30 分鐘的爆炸計時器與 45 分鐘的救援計時器；2. 最終決定：下令立即通過救生艙撤離，而不是等待；3. 邏輯解釋：明確指出救援船將遲到 15 分鐘，等待意味著死亡。"
+  }
+]

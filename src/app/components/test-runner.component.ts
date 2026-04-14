@@ -3,7 +3,7 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { LLMManager, LLMConfig } from '@hcs/llm-core';
 import { LLM_STORAGE_TOKEN } from '@hcs/llm-angular-common';
-import { NiahService, TestResult } from '../services/niah.service';
+import { Language, NiahService, TestResult } from '../services/niah.service';
 import { ModalService } from '../services/modal.service';
 
 @Component({
@@ -44,6 +44,14 @@ import { ModalService } from '../services/modal.service';
               @for (size of contextSizes; track size.value) {
                 <option [value]="size.value" [selected]="size.value === 128000">{{ size.label }}</option>
               }
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Language / 語言</label>
+            <select #lang (change)="updateLanguage(lang.value)">
+              <option value="en" selected>English</option>
+              <option value="zh">繁體中文</option>
             </select>
           </div>
         </div>
@@ -265,6 +273,7 @@ export class TestRunnerComponent implements OnInit {
   readonly selectedTargetId = signal<string>('');
   readonly selectedJudgeId = signal<string>('');
   readonly selectedContext = signal<number>(128000);
+  readonly selectedLanguage = signal<Language>('en');
   readonly selectedResult = signal<TestResult | null>(null);
   readonly showHaystack = signal(false);
   readonly copyHaystack = signal(false);
@@ -295,12 +304,16 @@ export class TestRunnerComponent implements OnInit {
     this.configs.set(c);
   }
 
+  updateLanguage(lang: string) {
+    this.selectedLanguage.set(lang as Language);
+  }
+
   async start() {
     const target = this.configs().find((c: LLMConfig) => c.id === this.selectedTargetId());
     const judge = this.configs().find((c: LLMConfig) => c.id === this.selectedJudgeId());
     
     if (target && judge) {
-      await this.niah.runTest(target, judge, this.selectedContext());
+      await this.niah.runTest(target, judge, this.selectedContext(), this.selectedLanguage());
     }
   }
 

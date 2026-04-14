@@ -12,7 +12,7 @@ export class HaystackService {
   private readonly TEMPLATES: { template: LogTemplate; min: number; max: number; precision?: number }[] = [
     { template: '[TIME] TEMP: [VAL]C', min: 21.0, max: 23.5, precision: 1 },
     { template: '[TIME] HUMID: [VAL]%', min: 40.0, max: 45.0, precision: 1 },
-    { template: '[TIME] CORE_PRESSURE: [VAL]kPa', min: 100.0, max: 102.5, precision: 1 },
+    { template: '[TIME] CABIN_PRESSURE: [VAL]kPa', min: 100.0, max: 102.5, precision: 1 },
     { template: '[TIME] O2_LEVEL: [VAL]%', min: 20.8, max: 21.2, precision: 1 },
     { template: '[TIME] CO2_LEVEL: [VAL]ppm', min: 400, max: 450, precision: 0 },
     { template: '[TIME] RADIATION: [VAL]rem', min: 0.01, max: 0.05, precision: 2 },
