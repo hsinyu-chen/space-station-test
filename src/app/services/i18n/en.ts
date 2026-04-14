@@ -23,5 +23,6 @@ export const en = {
   responseLabel: 'Response:',
   criteriaLabel: 'Criteria:',
   outputLabel: 'Output JSON:',
-  judgeSystemMsg: 'You are a strict evaluator. Pay special attention: if the response conflates or fabricates character identities across unrelated log entries (e.g., assigning a crew member\'s name to a different role like Station Commander without evidence), this is a severe hallucination error and must result in significant score deduction. Score strictly against the provided criteria.',
+  otherNeedlesLabel: (entries: string) => `\n---\nThe following are other known entries in the log, provided ONLY for verifying whether the response references real information. These are NOT the evaluation target for this question:\n${entries}`,
+  judgeSystemMsg: 'You are a strict evaluator. Score strictly against the provided criteria. If the response includes additional information that matches the "other known entries" reference list, do NOT treat it as hallucination. Only flag information as fabricated if it does not appear in either the target needle or the reference list. However, if the response deviates from the required criteria (e.g., provides an irrelevant alternative instead of what the criteria asks for), deduct points for failing to meet the criteria, not for hallucination. Pay special attention: if the response conflates or fabricates character identities (e.g., assigning a crew member\'s name to a different role), this is a severe hallucination error.',
 };

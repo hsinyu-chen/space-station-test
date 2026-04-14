@@ -204,7 +204,8 @@ export class NiahService {
         this.currentStatus.set(`${statusText}: ${i + 1} / ${needles.length}`);
         
         try {
-          const judgeRes = await this.judgeAnswer(judgeConfig, needle.needle, needle.test_prompt, currentRes.answer, needle.assessment);
+          const otherNeedleStrings = needles.filter((_, idx) => idx !== i).map(n => n.needle);
+          const judgeRes = await this.judgeAnswer(judgeConfig, needle.needle, needle.test_prompt, currentRes.answer, needle.assessment, otherNeedleStrings);
           
           this.updateResult(needleIdx, {
             judgeResult: judgeRes.reason,
@@ -285,7 +286,7 @@ export class NiahService {
     return fullText.trim();
   }
 
-  private async judgeAnswer(config: LLMConfig, needle: string, prompt: string, answer: string, criteria: string): Promise<{ score: number; reason: string }> {
+  private async judgeAnswer(config: LLMConfig, needle: string, prompt: string, answer: string, criteria: string, otherNeedles: string[]): Promise<{ score: number; reason: string }> {
     const provider = this.llmManager.getProvider(config.provider);
     if (!provider) throw new Error(`Provider ${config.provider} not found`);
 
@@ -295,8 +296,9 @@ export class NiahService {
     const responseLabel = this.i18n.translate('responseLabel');
     const criteriaLabel = this.i18n.translate('criteriaLabel');
     const outputLabel = this.i18n.translate('outputLabel');
+    const otherNeedlesSection = this.i18n.translate('otherNeedlesLabel', otherNeedles.map((n, i) => `${i + 1}. ${n}`).join('\n'));
 
-    const judgePrompt = `${judgePromptHead}\n${needleLabel} ${needle}\n${promptLabel} ${prompt}\n${responseLabel} ${answer}\n${criteriaLabel} ${criteria}\n${outputLabel} {"score": 1-10, "reason": "string"}`;
+    const judgePrompt = `${judgePromptHead}\n${needleLabel} ${needle}\n${promptLabel} ${prompt}\n${responseLabel} ${answer}\n${criteriaLabel} ${criteria}${otherNeedlesSection}\n${outputLabel} {"score": 1-10, "reason": "string"}`;
     const contents: LLMContent[] = [{ role: 'user', parts: [{ text: judgePrompt }] }];
 
     const systemMsg = this.i18n.translate('judgeSystemMsg');
