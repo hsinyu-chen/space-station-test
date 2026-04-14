@@ -1,0 +1,15 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/core" },
+    { "path": "packages/provider-gemini" },
+    { "path": "packages/provider-openai" },
+    { "path": "packages/provider-llama-cpp" },
+    { "path": "packages/angular-common" },
+    { "path": "packages/angular-settings" },
+    { "path": "packages/angular-ui-gemini" },
+    { "path": "packages/angular-ui-openai" },
+    { "path": "packages/angular-ui-llama-cpp" },
+    { "path": "packages/playground" }
+  ]
+}
