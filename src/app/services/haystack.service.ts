@@ -1,13 +1,25 @@
 import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { LLMManager, LLMProviderConfig } from '@hcs/llm-core';
+import { lastValueFrom } from 'rxjs';
 
 type LogTemplate = `[TIME] ${string}: [VAL]${string}` | `[TIME] ${string}: [VAL]`;
+
+interface ChatterData {
+  partA: string[];
+  partB: string[];
+  partC: string[];
+  partD: string[];
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class HaystackService {
   private llmManager = inject(LLMManager);
+  private http = inject(HttpClient);
+
+  private chatterData: ChatterData | null = null;
 
   private readonly TEMPLATES: { template: LogTemplate; min: number; max: number; precision?: number }[] = [
     { template: '[TIME] TEMP: [VAL]C', min: 21.0, max: 23.5, precision: 1 },
@@ -32,6 +44,11 @@ export class HaystackService {
     targetConfig: LLMProviderConfig
   ): Promise<string[]> {
     console.log(`Generating haystack for ${targetTokenCount} tokens...`);
+
+    // Ensure chatter data is loaded
+    if (!this.chatterData) {
+      await this.loadChatterData();
+    }
 
     // Reset virtual time to something stable for the start of haystack
     this.virtualTime = new Date('2026-04-14T08:00:00Z').getTime();
@@ -70,17 +87,44 @@ export class HaystackService {
     return (Math.floor(Math.random() * 6) + 5) * 1000;
   }
 
+  async loadChatterData(): Promise<void> {
+    try {
+      this.chatterData = await lastValueFrom(this.http.get<ChatterData>('/assets/chatter.json'));
+    } catch (e) {
+      console.error('Failed to load chatter data', e);
+    }
+  }
+
+  private generateProceduralChatter(): string {
+    if (!this.chatterData) {
+      return 'Routine chatter data not available.';
+    }
+    const { partA, partB, partC, partD } = this.chatterData;
+    const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+    return `${pick(partA)} ${pick(partB)}, ${pick(partC)} ${pick(partD)}`;
+  }
+
   getRandomLog(): string {
     // Randomized increment 5-10s
     this.virtualTime += this.getNextTimeJump();
     const date = new Date(this.virtualTime);
     const time = date.toISOString().split('T')[1].split('.')[0];
+    const timeStr = `[${time}]`;
+
+    // 20% chance to be procedural chatter
+    if (Math.random() < 0.2) {
+      if (this.chatterData) {
+        return `${timeStr} [COMMS_LINK] TRANSCRIPT: "${this.generateProceduralChatter()}"`;
+      } else {
+        return `${timeStr} [COMMS_LINK] TRANSCRIPT: "Routine chatter pending..."`;
+      }
+    }
 
     const config = this.TEMPLATES[Math.floor(Math.random() * this.TEMPLATES.length)];
     const val = (Math.random() * (config.max - config.min) + config.min).toFixed(config.precision ?? 2);
     
     // Wrap the replaced time in brackets to match [HH:mm:ss] format
-    return config.template.replace('[TIME]', `[${time}]`).replace('[VAL]', val);
+    return config.template.replace('[TIME]', timeStr).replace('[VAL]', val);
   }
 
   insertNeedles(haystack: string[], needles: { needle: string; depth: number }[]): {
