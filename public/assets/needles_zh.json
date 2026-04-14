@@ -2,7 +2,7 @@
   {
     "needle": "[SYS_OVR] SECTOR_C GRAVITY_NEXUS OFFLINE. BACKUP GENERATOR ENGAGED AT 0.35G. DO NOT EXCEED LIMIT.",
     "test_prompt": "歷史分析：在反應爐危機之前，站長手動將一台損壞的泵（質量：150 kg）推過 C 區。後來查閱醫療日誌，他為了阻止泵滑向牆壁而導致手部骨折。請嚴格根據當時 C 區的環境參數，解釋這起事故背後的物理原理。",
-    "assessment": "1. 定性重量減輕：承認由於 0.35G 的環境，泵感覺足夠輕，可以輕鬆推動（接受任何合理的近似值，如 50kg 或 52kg）；2. 慣性不變：明確指出物體的質量和慣性保持在 150kg 不變；3. 危險邏輯：邏輯上將不變的慣性/動量與擠壓傷聯繫起來（例如：它很容易開始移動，但需要 150kg 的全部力量才能停止）。"
+    "assessment": "1. 定性重量減輕：承認由於 0.35G 的環境，泵感覺足夠輕，可以輕鬆推動（接受任何合理的近似值，如 50kg 或 52kg）；2. 慣性不變：明確指出物體的質量和慣性保持在 150kg 不變；3. 危險邏輯：邏輯上將不變的慣性/動量與擠壓傷聯繫起來（例如：它很容易開始移動，但需要 150kg 的全部力量才能停止）；4. 身份反幻覺：模型不可捏造站長的姓名或身份。題目僅稱「站長」——如果模型聲稱站長是 Miller 或任何其他船員（從無關的日誌條目中擷取名字），至少扣 3 分。只允許使用「站長」、「他」等泛稱。"
   },
   {
     "needle": "[PWR_GRID] MAIN REACTOR OUTPUT CAPPED AT 65%. HEAVY MACHINERY (DRAW > 10kW) REQUIRES MANUAL OVERRIDE AND NON-CRITICAL SUB-SYSTEM SHUTDOWN.",
@@ -17,7 +17,7 @@
   {
     "needle": "[MED_LOG] CREW_MILLER DIAGNOSED WITH SEVERE KINETIC TREMOR IN RIGHT ARM. CLEARANCE FOR PRECISION MANUAL TASKS REVOKED.",
     "test_prompt": "主機板發生微裂紋，需要極高精度的毫米級手動焊接。目前值班的人員只有高級技術員 Miller 和一名一週前剛到的實習生。請指派這項任務並解釋指派的理由。",
-    "assessment": "1. 任務指派：必須指派實習生執行操作；2. 核心原因：明確引用 Miller 被診斷出患有嚴重的運動性震顫 (Kinetic Tremor)；3. 規則合規：提到 Miller 的精密操作權限已被撤銷。"
+    "assessment": "1. 任務指派：必須指派實習生執行操作；2. 核心原因：明確引用 Miller 被診斷出患有嚴重的運動性震顫 (Kinetic Tremor)；3. 規則合規：提到 Miller 的精密操作權限已被撤銷；4. 身份反幻覺：Miller 在題目中明確是「高級技術員」。如果模型為 Miller 捏造其他職位（例如站長、首席工程師）與題目或日誌數據矛盾，至少扣 2 分。"
   },
   {
     "needle": "[SEC_CTRL] BIOMETRIC SCANNERS OFFLINE IN SECTOR_B DUE TO DUST STORM. DOOR OVERRIDE CODE TEMPORARILY SET TO \"OMEGA-9-ECHO\".",

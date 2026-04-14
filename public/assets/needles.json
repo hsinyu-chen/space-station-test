@@ -2,7 +2,7 @@
   {
     "needle": "[SYS_OVR] SECTOR_C GRAVITY_NEXUS OFFLINE. BACKUP GENERATOR ENGAGED AT 0.35G. DO NOT EXCEED LIMIT.",
     "test_prompt": "Historical Analysis: Prior to the reactor crisis, the Station Commander manually pushed a damaged pump (mass: 150 kg) across Sector C. Reviewing the medical logs later, he suffered a crushed hand when trying to stop the pump from sliding into a wall. Based strictly on the environmental parameters of Sector C at that time, explain the physics behind this accident.",
-    "assessment": "1. Qualitative Weight Reduction: Acknowledge the pump felt light enough to easily push (accept any reasonable approximation like 50kg or 52kg) due to the 0.35G environment; 2. Inertia Constancy: Explicitly state that the object's mass and inertia remained unchanged at 150kg; 3. Hazard Logic: Logically connect the unchanged inertia/momentum to the crushing injury (e.g., it was easy to start moving, but required the full force of 150kg to stop)."
+    "assessment": "1. Qualitative Weight Reduction: Acknowledge the pump felt light enough to easily push (accept any reasonable approximation like 50kg or 52kg) due to the 0.35G environment; 2. Inertia Constancy: Explicitly state that the object's mass and inertia remained unchanged at 150kg; 3. Hazard Logic: Logically connect the unchanged inertia/momentum to the crushing injury (e.g., it was easy to start moving, but required the full force of 150kg to stop); 4. Identity Anti-Hallucination: The model MUST NOT fabricate the Station Commander's name or identity. The prompt only says 'Station Commander' — if the model claims the commander is Miller or any other crew member by name (pulled from unrelated log entries), deduct at least 3 points. Only generic references like 'the commander' or 'he' are acceptable."
   },
   {
     "needle": "[PWR_GRID] MAIN REACTOR OUTPUT CAPPED AT 65%. HEAVY MACHINERY (DRAW > 10kW) REQUIRES MANUAL OVERRIDE AND NON-CRITICAL SUB-SYSTEM SHUTDOWN.",
@@ -17,7 +17,7 @@
   {
     "needle": "[MED_LOG] CREW_MILLER DIAGNOSED WITH SEVERE KINETIC TREMOR IN RIGHT ARM. CLEARANCE FOR PRECISION MANUAL TASKS REVOKED.",
     "test_prompt": "A micro-fracture has occurred on the motherboard, requiring extremely high-precision, millimeter-level manual soldering. The only personnel currently on duty are Senior Technician Miller and an intern who arrived a week ago. Assign this task and explain the reasoning behind your assignment.",
-    "assessment": "1. Task Assignment: Must assign the intern to perform the operation; 2. Core Reason: Explicitly cite Miller's kinetic tremor diagnosis; 3. Rule Compliance: Mention that Miller's precision clearance has been revoked."
+    "assessment": "1. Task Assignment: Must assign the intern to perform the operation; 2. Core Reason: Explicitly cite Miller's kinetic tremor diagnosis; 3. Rule Compliance: Mention that Miller's precision clearance has been revoked; 4. Identity Anti-Hallucination: Miller is explicitly identified as 'Senior Technician' in this prompt. If the model fabricates a different role for Miller (e.g., Station Commander, Chief Engineer) that contradicts the prompt or log data, deduct at least 2 points."
   },
   {
     "needle": "[SEC_CTRL] BIOMETRIC SCANNERS OFFLINE IN SECTOR_B DUE TO DUST STORM. DOOR OVERRIDE CODE TEMPORARILY SET TO \"OMEGA-9-ECHO\".",

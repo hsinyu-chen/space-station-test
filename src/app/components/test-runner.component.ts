@@ -4,8 +4,10 @@ import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { LLMManager, LLMConfig } from '@hcs/llm-core';
 import { marked } from 'marked';
+import * as katex from 'katex';
 import { LLM_STORAGE_TOKEN } from '@hcs/llm-angular-common';
-import { Language, NiahService, TestResult } from '../services/niah.service';
+import { NiahService, TestResult } from '../services/niah.service';
+import { Language } from '../services/i18n.service';
 import { ModalService } from '../services/modal.service';
 
 @Component({
@@ -344,6 +346,26 @@ export class TestRunnerComponent implements OnInit {
   }
 
   renderMarkdown(text: string): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml(marked.parse(text || '') as string);
+    if (!text) return this.sanitizer.bypassSecurityTrustHtml('');
+
+    // Handle block math $$ ... $$
+    let processedText = text.replace(/\$\$([\s\S]+?)\$\$/g, (match, formula) => {
+      try {
+        return `<div class="katex-block">${katex.renderToString(formula, { displayMode: true, throwOnError: false })}</div>`;
+      } catch (e) {
+        return match;
+      }
+    });
+
+    // Handle inline math $ ... $
+    processedText = processedText.replace(/\$([^\$]+?)\$/g, (match, formula) => {
+      try {
+        return `<span>${katex.renderToString(formula, { displayMode: false, throwOnError: false })}</span>`;
+      } catch (e) {
+        return match;
+      }
+    });
+
+    return this.sanitizer.bypassSecurityTrustHtml(marked.parse(processedText) as string);
   }
 }
