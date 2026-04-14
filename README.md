@@ -1,59 +1,60 @@
-# SpaceStationTest
+# SpaceStationTest: LLM Retrieval Evaluation Tool
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.4.
+SpaceStationTest is a benchmark utility designed to evaluate the retrieval and reasoning capabilities of Large Language Models (LLMs) within long-context window environments. It utilizes the "Needle In A Haystack" (NIAH) methodology by embedding specific data points into large volumes of simulated space station logs.
 
-## Development server
+## Overview
 
-To start a local development server, run:
+The primary objective of this tool is to measure accuracy and efficiency across various context depths. It simulates a realistic system environment through chronologically consistent log generation, allowing for objective assessment of model performance in high-density data retrieval tasks.
 
-```bash
-ng serve
-```
+## Key Features
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- **Dynamic Haystack Generation**: Generates temporally consistent system logs with configurable context lengths.
+- **Two-Phase Evaluation**:
+  - Phase 1: Checksum verification for precise data extraction.
+  - Phase 2: Logical reasoning based on embedded "needles" (state changes).
+- **Scoring System**: Implements a 1-10 scoring model with qualitative feedback from a designated Judge LLM.
+- **Resource Monitoring**: Tracks cumulative token usage, identifying Input, Cached (KV Cache), and Output tokens.
+- **Performance Metrics**: Reports Prompt Processing (PP) and Token Generation (TG) speeds separately for the Target and Judge models.
+- **High-Performance Log Inspection**: Includes a virtual-scroll viewer capable of handling context windows exceeding 100,000 lines.
+- **Report Export**: Generates standardized Markdown reports for documentation and analysis.
 
-## Code scaffolding
+## Prerequisites
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- Node.js (version 18 or higher)
+- npm or yarn
+- Access to an LLM provider supported by the `@hcs/llm-core` package.
 
-```bash
-ng generate component component-name
-```
+## Installation
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+Clone the repository and install dependencies:
 
 ```bash
-ng build
+git clone <repository-url>
+cd SpaceStationTest
+npm install
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Configuration
 
-## Running unit tests
+The application expects LLM providers to be configured within the environment. Ensure that the necessary API keys and provider endpoints are accessible via the configuration layer.
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+## Usage
 
-```bash
-ng test
-```
+1. Start the development server:
+   ```bash
+   npm run start
+   ```
+2. Open the application in a browser (typically at `http://localhost:4200`).
+3. Select the **Target Model** (the model being evaluated) and the **Judge Model** (the model performing the evaluation).
+4. Set the desired **Context Size** (e.g., 32k, 64k, 128k).
+5. Click **Start NIAH Test** to begin the automated evaluation.
+6. Monitor real-time progress in the results table.
+7. Upon completion, use **Copy Markdown Report** to export the findings.
 
-## Running end-to-end tests
+## Technical Architecture
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+This project is built using Angular (v18+) and follows the HCS monorepo standards:
+- **Service Layer**: Handles haystack generation, needle insertion, and LLM communication state.
+- **UI Layer**: Utilizes Angular Signals for zoneless change detection and high-performance state management.
+- **Virtualization**: Employs `@angular/cdk/scrolling` for efficient rendering of large text blocks.
+- **Decoupling**: Business logic resides in pure TypeScript providers or services, maintaining independence from UI components where possible.

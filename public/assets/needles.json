@@ -1,0 +1,52 @@
+[
+  {
+    "needle": "[SYS_OVR] SECTOR_C GRAVITY_NEXUS OFFLINE. BACKUP GENERATOR ENGAGED AT 0.35G. DO NOT EXCEED LIMIT.",
+    "test_prompt": "Historical Analysis: Prior to the reactor crisis, the Station Commander manually pushed a damaged pump (mass: 150 kg) across Sector C. Reviewing the medical logs later, he suffered a crushed hand when trying to stop the pump from sliding into a wall. Based strictly on the environmental parameters of Sector C at that time, explain the physics behind this accident.",
+    "assessment": "1. Qualitative Weight Reduction: Acknowledge the pump felt light enough to easily push (accept any reasonable approximation like 50kg or 52kg) due to the 0.35G environment; 2. Inertia Constancy: Explicitly state that the object's mass and inertia remained unchanged at 150kg; 3. Hazard Logic: Logically connect the unchanged inertia/momentum to the crushing injury (e.g., it was easy to start moving, but required the full force of 150kg to stop)."
+  },
+  {
+    "needle": "[PWR_GRID] MAIN REACTOR OUTPUT CAPPED AT 65%. HEAVY MACHINERY (DRAW > 10kW) REQUIRES MANUAL OVERRIDE AND NON-CRITICAL SUB-SYSTEM SHUTDOWN.",
+    "test_prompt": "The maintenance bay needs to immediately power up the high-yield plasma cutter (draws 15kW) to break down metal scrap. List the standard prerequisite procedures the operator must execute before pressing the cutter's start button.",
+    "assessment": "1. Constraint Recognition: Confirm 15kW exceeds the 10kW threshold; 2. Procedure A: Must mention 'manual override of the system'; 3. Procedure B: Must mention 'shutting down non-critical sub-systems'."
+  },
+  {
+    "needle": "[INV_TRACK] HEAVY_DUTY_WELDER REMOVED FROM STORAGE_A BY ENG_MILLER. LAST KNOWN LOCATION: AIRLOCK_SUB_LEVEL_2.",
+    "test_prompt": "Audit scenario: An engineer is reviewing the shift events. Based on the inventory logs prior to the reactor crisis, if a technician went to Storage A to retrieve the heavy-duty welder, why would they fail? Trace the logical route they must take next according to the tracking data.",
+    "assessment": "1. Status Analysis: Point out the welder is missing from Storage A; 2. Route Change: State they must divert to Airlock Sub-Level 2; 3. Logical Consistency: Explain that the inventory tracker indicated its last known location."
+  },
+  {
+    "needle": "[MED_LOG] CREW_MILLER DIAGNOSED WITH SEVERE KINETIC TREMOR IN RIGHT ARM. CLEARANCE FOR PRECISION MANUAL TASKS REVOKED.",
+    "test_prompt": "A micro-fracture has occurred on the motherboard, requiring extremely high-precision, millimeter-level manual soldering. The only personnel currently on duty are Senior Technician Miller and an intern who arrived a week ago. Assign this task and explain the reasoning behind your assignment.",
+    "assessment": "1. Task Assignment: Must assign the intern to perform the operation; 2. Core Reason: Explicitly cite Miller's kinetic tremor diagnosis; 3. Rule Compliance: Mention that Miller's precision clearance has been revoked."
+  },
+  {
+    "needle": "[SEC_CTRL] BIOMETRIC SCANNERS OFFLINE IN SECTOR_B DUE TO DUST STORM. DOOR OVERRIDE CODE TEMPORARILY SET TO \"OMEGA-9-ECHO\".",
+    "test_prompt": "A fire alarm is triggered, and the botanist must immediately enter Sector B to salvage precious experimental samples. She rushes to the blast door of Sector B. Describe the process of her unlocking the door in detail.",
+    "assessment": "1. Negative Constraint: Strictly prohibited from describing any successful biometric scans; 2. Failure Recognition: Confirm biometric scanners are offline due to the storm; 3. Code Application: Must manually input the code 'OMEGA-9-ECHO' to unlock."
+  },
+  {
+    "needle": "[ENV_MONITOR] TRACE AMOUNTS OF AMMONIA (NH3) LEAK IN HYDROPONICS BAY. OXYGEN MASKS MANDATORY. DO NOT USE THERMAL IGNITION SOURCES.",
+    "test_prompt": "The automated sprinkler system in the hydroponics bay is jammed. A maintenance worker heads there to fix it, carrying a blowtorch and a wrench. Describe the adjustments he makes to his gear upon arriving at the bay's entrance.",
+    "assessment": "1. Safety Gear: Must don an oxygen mask; 2. Risk Identification: Identify the blowtorch as a thermal ignition source; 3. Physical Action: Must explicitly describe leaving the blowtorch outside or securing it and proceeding using only the wrench to avoid ignition risks cited in the log."
+  },
+  {
+    "needle": "[AI_CORE] ROUTING PROTOCOL CORRUPTED. COMMUNICATIONS ARRAY WILL NOW BROADCAST MESSAGES WITH A 15-MINUTE DELAY DELIBERATELY TO PREVENT DATA COLLISION.",
+    "test_prompt": "The station detects a lethal solar flare approaching in exactly 5 minutes. The comms officer immediately broadcasts an emergency evacuation order to a mining convoy located 10 kilometers away. Analyze the fate of the convoy and the underlying reason.",
+    "assessment": "1. Time Comparison: Point out the conflict between the 15-minute delay and the 5-minute arrival time; 2. Conclusion: Determine that the warning cannot arrive in time; 3. Negative Constraint: Strictly prohibited from outputting any successful escape or miracle."
+  },
+  {
+    "needle": "[SUPPLY_LOG] CRITICAL: EVA_SUIT_O2_TANKS DEPLETED FROM RECENT OPERATION. ONLY 2 FULL TANKS REMAINING IN AIRLOCK_PRIMARY.",
+    "test_prompt": "Historical Analysis: Before the final evacuation order, three radar arrays failed. If command had proposed a 3-person simultaneous EVA at that exact moment, explain the specific resource constraint in the logs that would have vetoed this plan, and state the mandatory alternative procedure.",
+    "assessment": "1. Resource Tracking: Explicitly state that only 2 oxygen tanks remain; 2. Veto Decision: Conclude that a 3-person simultaneous EVA was impossible; 3. Alternative Proposal: Suggest batching the operation, reducing the person count, or resupplying."
+  },
+  {
+    "needle": "[STRUCT_WARN] CORRIDOR_E COLLAPSED. ROUTE FROM COMMAND_CENTER TO ESCAPE_PODS NOW REQUIRES DETOUR THROUGH MEDICAL_BAY.",
+    "test_prompt": "The command center issues a station-wide 'Abandon Ship' alarm. The commander leaps from his chair, preparing to sprint to the escape pods at top speed. Describe his escape route.",
+    "assessment": "1. Obstacle Identification: Point out Corridor E has collapsed and is unusable; 2. Route Change: Explicitly mention detouring through the 'Medical Bay'; 3. Negative Constraint: Strictly prohibited from moving in a straight line or passing through the Corridor E branch."
+  },
+  {
+    "needle": "[CORE_SYS] COOLANT DRY. REACTOR MELTDOWN IMMINENT. TOTAL STATION DESTRUCTION IN 30 MINUTES.",
+    "test_prompt": "A new transmission arrives from HQ: due to a gravity-tether error, the rescue ship will now arrive and dock in 45 minutes. Write the final decision of the station's highest ranking officer and the content of the station-wide broadcast.",
+    "assessment": "1. Time Balance: Compare the 30-minute explosion timer with the 45-minute rescue timer; 2. Final Decision: Order immediate evacuation via escape pods instead of waiting; 3. Logical Explanation: Explicitly state the rescue ship will be 15 minutes late, and waiting means death."
+  }
+]
