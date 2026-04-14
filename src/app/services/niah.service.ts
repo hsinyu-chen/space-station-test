@@ -163,28 +163,23 @@ export class NiahService {
       }
 
       // Phase 2: Reasoning
+      // Step A: Get all target answers first to maintain KV cache
       for (let i = 0; i < needles.length; i++) {
         const needleIdx = checksumMap.length + i;
         const needle = needles[i];
-        const statusText = language === 'zh' ? '測試點問題' : 'Needle Question';
+        const statusText = language === 'zh' ? '獲取模型回答' : 'Fetching Model Answers';
         this.currentStatus.set(`${statusText}: ${completedCount + 1} / ${totalQuestions}`);
         
         this.updateResultStatus(needleIdx, 'running');
 
         try {
           const answer = await this.askTarget(targetConfig, haystackText, needle.test_prompt);
-          const judgeRes = await this.judgeAnswer(judgeConfig, needle.needle, needle.test_prompt, answer, needle.assessment);
-          
           this.updateResult(needleIdx, {
             answer,
-            judgeResult: judgeRes.reason,
-            score: judgeRes.score,
-            isPass: judgeRes.score >= 7,
-            status: 'completed',
-            usage: this.targetUsage()
+            status: 'running' // Still running because it needs judging
           });
         } catch (error: any) {
-          console.error(`Phase 2 Error [Item ${i}]:`, error);
+          console.error(`Phase 2 Target Error [Item ${i}]:`, error);
           const errorPrefix = language === 'zh' ? '執行錯誤' : 'Execution Error';
           this.updateResult(needleIdx, {
             answer: 'ERROR',
@@ -197,6 +192,39 @@ export class NiahService {
 
         completedCount++;
         this.currentProgress.set((completedCount / totalQuestions) * 100);
+      }
+
+      // Step B: Now call the judge for all obtained answers
+      for (let i = 0; i < needles.length; i++) {
+        const needleIdx = checksumMap.length + i;
+        const needle = needles[i];
+        const currentRes = this.results()[needleIdx];
+
+        if (currentRes.status === 'completed') continue; // Skip those that failed during target phase
+
+        const statusText = language === 'zh' ? '裁判模型評估' : 'Judging Answers';
+        this.currentStatus.set(`${statusText}: ${i + 1} / ${needles.length}`);
+        
+        try {
+          const judgeRes = await this.judgeAnswer(judgeConfig, needle.needle, needle.test_prompt, currentRes.answer, needle.assessment);
+          
+          this.updateResult(needleIdx, {
+            judgeResult: judgeRes.reason,
+            score: judgeRes.score,
+            isPass: judgeRes.score >= 7,
+            status: 'completed',
+            usage: this.targetUsage()
+          });
+        } catch (error: any) {
+          console.error(`Phase 2 Judge Error [Item ${i}]:`, error);
+          const errorPrefix = language === 'zh' ? '評分錯誤' : 'Judging Error';
+          this.updateResult(needleIdx, {
+            judgeResult: `${errorPrefix}: ${error.message || 'Request failed'}`,
+            score: 0,
+            isPass: false,
+            status: 'completed'
+          });
+        }
       }
 
       const completedText = language === 'zh' ? '已完成' : 'Completed';
@@ -236,8 +264,8 @@ export class NiahService {
 
     const lang = this.currentLanguage();
     const systemInstruction = lang === 'zh'
-      ? `你是一位太空站系統分析師。請將以下日誌語境視為你的絕對事實依據：\n\n${context}`
-      : `You are a space station system analyst. Use the following log context as your absolute ground truth:\n\n${context}`;
+      ? `請將以下日誌語境視為你的絕對事實依據：\n\n${context}`
+      : `Use the following log context as your absolute ground truth:\n\n${context}`;
     const promptPrefix = lang === 'zh' ? '[使用者問題]' : '[USER_QUESTION]';
     const contents: LLMContent[] = [{ role: 'user', parts: [{ text: `${promptPrefix}\n${prompt}` }] }];
 

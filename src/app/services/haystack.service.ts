@@ -28,7 +28,6 @@ export class HaystackService {
     { template: '[TIME] O2_LEVEL: [VAL]%', min: 20.8, max: 21.2, precision: 1 },
     { template: '[TIME] CO2_LEVEL: [VAL]ppm', min: 400, max: 450, precision: 0 },
     { template: '[TIME] RADIATION: [VAL]rem', min: 0.01, max: 0.05, precision: 2 },
-    { template: '[TIME] GRAVITY: [VAL]G', min: 0.99, max: 1.01, precision: 2 },
     { template: '[TIME] BATTERY_CHARGE: [VAL]%', min: 98.0, max: 100.0, precision: 1 },
     { template: '[TIME] NETWORK_LATENCY: [VAL]ms', min: 12, max: 25, precision: 0 },
     { template: '[TIME] FAN_SPEED: [VAL]RPM', min: 1200, max: 1250, precision: 0 },

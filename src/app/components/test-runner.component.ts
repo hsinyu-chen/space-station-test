@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, OnInit, importProvidersFrom } from '@angular/core';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { LLMManager, LLMConfig } from '@hcs/llm-core';
+import { marked } from 'marked';
 import { LLM_STORAGE_TOKEN } from '@hcs/llm-angular-common';
 import { Language, NiahService, TestResult } from '../services/niah.service';
 import { ModalService } from '../services/modal.service';
@@ -209,27 +211,27 @@ import { ModalService } from '../services/modal.service';
             <div class="modal-body detail-view">
               <div class="detail-section">
                 <label>Question</label>
-                <div class="code-box">{{ res.question }}</div>
+                <div class="code-box" [innerHTML]="renderMarkdown(res.question)"></div>
               </div>
               @if (res.reference) {
                 <div class="detail-section">
                   <label>Reference (Needle)</label>
-                  <div class="code-box">{{ res.reference }}</div>
+                  <div class="code-box" [innerHTML]="renderMarkdown(res.reference)"></div>
                 </div>
               }
               @if (res.criteria) {
                 <div class="detail-section">
                   <label>Judging Criteria</label>
-                  <div class="code-box">{{ res.criteria }}</div>
+                  <div class="code-box" [innerHTML]="renderMarkdown(res.criteria)"></div>
                 </div>
               }
               <div class="detail-section">
                 <label>Model Response</label>
-                <div class="code-box">{{ res.answer }}</div>
+                <div class="code-box" [innerHTML]="renderMarkdown(res.answer)"></div>
               </div>
               <div class="detail-section">
                 <label>Judge Reasoning</label>
-                <div class="code-box" [class.fail-box]="!res.isPass">{{ res.judgeResult }}</div>
+                <div class="code-box" [class.fail-box]="!res.isPass" [innerHTML]="renderMarkdown(res.judgeResult)"></div>
               </div>
             </div>
           </div>
@@ -268,6 +270,7 @@ export class TestRunnerComponent implements OnInit {
   private storage = inject(LLM_STORAGE_TOKEN);
   protected niah = inject(NiahService);
   private modalService = inject(ModalService);
+  private sanitizer = inject(DomSanitizer);
 
   readonly configs = signal<LLMConfig[]>([]);
   readonly selectedTargetId = signal<string>('');
@@ -338,5 +341,9 @@ export class TestRunnerComponent implements OnInit {
     const text = this.niah.lastHaystack().join('\n');
     await navigator.clipboard.writeText(text);
     this.modalService.show('Full haystack copied to clipboard!', 'Success');
+  }
+
+  renderMarkdown(text: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(marked.parse(text || '') as string);
   }
 }
