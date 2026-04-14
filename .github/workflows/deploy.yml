@@ -34,7 +34,7 @@ jobs:
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist/space-station-test/browser
+          path: dist/SpaceStationTest/browser
 
       - id: deployment
         uses: actions/deploy-pages@v4
