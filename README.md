@@ -2,6 +2,8 @@
 
 A space-station-themed **Needle-In-A-Haystack (NIAH)** evaluation tool for benchmarking LLM long-context retrieval accuracy across varying context depths and window sizes.
 
+🔗 **Live Demo**: [https://hsinyu-chen.github.io/space-station-test/](https://hsinyu-chen.github.io/space-station-test/)
+
 ## What It Does
 
 SpaceStationTest embeds critical data points ("needles") into large volumes of simulated space station system logs ("haystack"), then asks an LLM to retrieve and reason about them. This measures how well a model handles information retrieval at different context depths (e.g., 10%, 50%, 90%) and window sizes (32k–128k+ tokens).
