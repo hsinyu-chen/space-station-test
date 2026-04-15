@@ -1,0 +1,13 @@
+<div class="modal-overlay" [class.visible]="modalService.isOpen()" (click)="closeOnBackdrop($event)">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ modalService.title() }}</h2>
+    </div>
+    <div class="modal-body">
+      <p>{{ modalService.message() }}</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-close" (click)="modalService.close()">Dismiss</button>
+    </div>
+  </div>
+</div>

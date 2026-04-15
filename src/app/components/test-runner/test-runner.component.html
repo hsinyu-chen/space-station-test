@@ -1,0 +1,252 @@
+<div class="test-runner">
+  <!-- 1. Configuration Panel -->
+  <section class="panel config-panel">
+    <div class="panel-header">
+      <h2>Test Configuration</h2>
+    </div>
+    <div class="config-grid">
+      <div class="field">
+        <label>Target LLM (to be tested)</label>
+        <select #target [value]="selectedTargetId()" (change)='onProfileChange(target, "target")'>
+          <option value="">Select a profile...</option>
+          @for (cfg of configs(); track cfg.id) {
+            <option [value]="cfg.id">{{ cfg.name }} ({{ cfg.provider }})</option>
+          }
+          <option value="ADD_NEW">➕ (new profile...)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Judge LLM (to assess quality)</label>
+        <select #judge [value]="selectedJudgeId()" (change)='onProfileChange(judge, "judge")'>
+          <option value="">Select a profile...</option>
+          @for (cfg of configs(); track cfg.id) {
+            <option [value]="cfg.id">{{ cfg.name }} ({{ cfg.provider }})</option>
+          }
+          <option value="ADD_NEW">➕ (new profile...)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Language / 語言</label>
+        <select #lang (change)="updateLanguage(lang.value)">
+          <option value="en" selected>English</option>
+          <option value="zh">繁體中文</option>
+        </select>
+      </div>
+      <div class="field context-field">
+        <div class="field-header">
+          <label>Context Length (Tokens)</label>
+          <span class="value-display">{{ formatTokens(selectedContext()) }}</span>
+        </div>
+        <input type="range" 
+               min="0" 
+               max="1000" 
+               step="1"
+               [value]="tokensToSlider(selectedContext())"
+               (input)="onContextSliderChange($event)">
+      </div>
+    </div>
+
+    <button class="start-btn" 
+            [disabled]="!selectedTargetId() || !selectedJudgeId() || niah.isTesting()"
+            (click)="start()">
+      @if (niah.isTesting()) {
+        <span class="spinner"></span> Testing...
+      } @else {
+        Start NIAH Test
+      }
+    </button>
+  </section>
+
+  <!-- 2. Execution Status -->
+  @if (niah.isTesting() || niah.results().length > 0) {
+    <section class="panel status-panel">
+      <div class="panel-header">
+        <h2>Test Execution</h2>
+        <div class="badges">
+          <span class="badge" [class.active]="niah.isTesting()">{{ niah.currentStatus() }}</span>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar" [style.width.%]="niah.currentProgress()"></div>
+      </div>
+
+      <!-- Real-time Metrics -->
+      <div class="metrics-grid multi-row">
+        <!-- Row 1: Target Model -->
+        <div class="model-row">
+          <div class="model-label">Target Model</div>
+          @if (niah.targetUsage(); as usage) {
+            <div class="metric">
+              <span class="label">PP Progress</span>
+              <span class="value">
+                {{ (usage.promptProcessed || 0) / (usage.promptTotal || 1) * 100 | number:'1.0-1' }}%
+              </span>
+            </div>
+            <div class="metric">
+              <span class="label">Speed (PP / TG)</span>
+              <span class="value">{{ usage.promptSpeed || 0 | number:'1.0-1' }} / {{ usage.completionSpeed || 0 | number:'1.0-1' }}</span>
+            </div>
+            <div class="metric usage-metric">
+              <span class="label">Total Usage (I / C / O)</span>
+              <span class="value">
+                {{ niah.targetTotalUsage().prompt }} / {{ niah.targetTotalUsage().cached }} / {{ niah.targetTotalUsage().candidates }}
+              </span>
+            </div>
+          } @else {
+            <div class="metric-placeholder">Waiting for Target Model activity...</div>
+          }
+        </div>
+
+        <!-- Row 2: Judge Model -->
+        <div class="model-row">
+          <div class="model-label">Judge Model</div>
+          @if (niah.judgeUsage(); as usage) {
+            <div class="metric">
+              <span class="label">PP Progress</span>
+              <span class="value">100%</span>
+            </div>
+            <div class="metric">
+              <span class="label">Speed (PP / TG)</span>
+              <span class="value">{{ usage.promptSpeed || 0 | number:'1.0-1' }} / {{ usage.completionSpeed || 0 | number:'1.0-1' }}</span>
+            </div>
+            <div class="metric usage-metric">
+              <span class="label">Total Usage (I / C / O)</span>
+              <span class="value">
+                {{ niah.judgeTotalUsage().prompt }} / {{ niah.judgeTotalUsage().cached }} / {{ niah.judgeTotalUsage().candidates }}
+              </span>
+            </div>
+          } @else {
+            <div class="metric-placeholder">Waiting for Judge Model activity...</div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- 3. Results Table -->
+  @if (niah.results().length > 0) {
+    <section class="panel results-panel">
+      <div class="panel-header">
+        <h2>Results</h2>
+        <div class="header-btns">
+          @if (niah.lastHaystack().length > 0) {
+            <button class="copy-btn secondary" style="margin-right: 1.5rem;" (click)="showHaystack.set(true)">View Full Haystack</button>
+          }
+          
+          <div class="copy-controls">
+            <label><input type="checkbox" [checked]="copyHaystack()" (change)="copyHaystack.set(!copyHaystack())"> Haystack</label>
+            <label><input type="checkbox" [checked]="copyStandard()" (change)="copyStandard.set(!copyStandard())"> Standard</label>
+            <label><input type="checkbox" [checked]="copyNeedle()" (change)="copyNeedle.set(!copyNeedle())"> Needle</label>
+            <button class="copy-btn" (click)="copyReport()">Copy Report</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="results-table-wrapper">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Score</th>
+              <th>Status</th>
+              <th>Question</th>
+              <th>Judge Feedback</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (res of niah.results(); track res.question) {
+              <tr class="result-row" [class.is-running]="res.status === 'running'" 
+                  (click)="res.status === 'completed' && selectedResult.set(res)"
+                  [style.cursor]="res.status === 'completed' ? 'pointer' : 'default'">
+                <td><span class="type-pill" [attr.data-type]="res.type">{{ res.type }}</span></td>
+                <td>
+                  @if (res.status === 'completed') {
+                    <span class="score-badge" [ngClass]="getScoreClass(res.score)">{{ res.score }}</span>
+                  } @else {
+                    <span class="score-badge pending">-</span>
+                  }
+                </td>
+                <td>
+                  @if (res.status === 'completed') {
+                    <span class="status-pill" [class.pass]="res.isPass">{{ res.isPass ? 'PASS' : 'FAIL' }}</span>
+                  } @else if (res.status === 'running') {
+                    <span class="status-pill running">RUNNING...</span>
+                  } @else {
+                    <span class="status-pill pending">WAITING</span>
+                  }
+                </td>
+                <td class="truncate">{{ res.question }}</td>
+                <td class="truncate" [style.color]="res.status === 'completed' ? 'inherit' : '#64748b'">
+                  {{ res.status === 'completed' ? res.judgeResult : (res.status === 'running' ? 'Analyzing log context...' : 'Waiting in queue...') }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
+  <!-- 4. Result Detail Modal -->
+  @if (selectedResult(); as res) {
+    <div class="modal-overlay" (click)="selectedResult.set(null)">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Test Detail (Score: {{ selectedResult()?.score }}/10)</h3>
+          <button class="close-btn" (click)="selectedResult.set(null)">&times;</button>
+        </div>
+        <div class="modal-body detail-view">
+          <div class="detail-section">
+            <label>Question</label>
+            <div class="code-box" [innerHTML]="renderMarkdown(res.question)"></div>
+          </div>
+          @if (res.reference) {
+            <div class="detail-section">
+              <label>Reference (Needle)</label>
+              <div class="code-box" [innerHTML]="renderMarkdown(res.reference)"></div>
+            </div>
+          }
+          @if (res.criteria) {
+            <div class="detail-section">
+              <label>Judging Criteria</label>
+              <div class="code-box" [innerHTML]="renderMarkdown(res.criteria)"></div>
+            </div>
+          }
+          <div class="detail-section">
+            <label>Model Response</label>
+            <div class="code-box" [innerHTML]="renderMarkdown(res.answer)"></div>
+          </div>
+          <div class="detail-section">
+            <label>Judge Reasoning</label>
+            <div class="code-box" [class.fail-box]="!res.isPass" [innerHTML]="renderMarkdown(res.judgeResult)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Haystack Viewer Modal -->
+  @if (showHaystack()) {
+    <div class="modal-overlay" (click)="showHaystack.set(false)">
+      <div class="modal-content haystack-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Generated Haystack ({{ niah.lastHaystack().length }} lines)</h3>
+          <div class="header-btns">
+            <button class="action-btn secondary" (click)="copyAllHaystack()">Copy All</button>
+            <button class="close-btn" (click)="showHaystack.set(false)">&times;</button>
+          </div>
+        </div>
+        <div class="modal-body terminal-view">
+          <cdk-virtual-scroll-viewport itemSize="22" class="haystack-viewport">
+            <div *cdkVirtualFor="let line of niah.lastHaystack(); let i = index" class="log-line">
+              <span class="line-num">{{ i + 1 }}</span>
+              <span class="line-content">{{ line }}</span>
+            </div>
+          </cdk-virtual-scroll-viewport>
+        </div>
+      </div>
+    </div>
+  }
+</div>
