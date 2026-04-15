@@ -1,0 +1,3 @@
+[submodule "external/hcs-llm-monorepo"]
+	path = external/hcs-llm-monorepo
+	url = H:/MyWork/hcs-llm-monorepo
