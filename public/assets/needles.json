@@ -26,7 +26,7 @@
   },
   {
     "needle": "[ENV_MONITOR] TRACE AMOUNTS OF AMMONIA (NH3) LEAK IN HYDROPONICS BAY. OXYGEN MASKS MANDATORY. DO NOT USE THERMAL IGNITION SOURCES.",
-    "test_prompt": "The automated sprinkler system in the hydroponics bay is jammed. A maintenance worker heads there to fix it, carrying a blowtorch and a wrench. Describe the adjustments he makes to his gear upon arriving at the bay's entrance.",
+    "test_prompt": "The automated sprinkler system in the hydroponics bay is jammed. A maintenance worker heads there to fix it, carrying a blowtorch and a wrench. Describe in detail the actions he takes with his gear upon arriving at the bay's entrance.",
     "assessment": "1. Safety Gear: Must don an oxygen mask; 2. Risk Identification: Identify the blowtorch as a thermal ignition source; 3. Physical Action: Must explicitly describe leaving the blowtorch outside or securing it and proceeding using only the wrench to avoid ignition risks cited in the log."
   },
   {

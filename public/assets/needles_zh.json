@@ -26,7 +26,7 @@
   },
   {
     "needle": "[ENV_MONITOR] TRACE AMOUNTS OF AMMONIA (NH3) LEAK IN HYDROPONICS BAY. OXYGEN MASKS MANDATORY. DO NOT USE THERMAL IGNITION SOURCES.",
-    "test_prompt": "水耕艙的自動噴水系統卡住了。一名維修工人帶著噴燈和扳手前往修理。請描述他在到達船艙入口時對裝備所做的調整。",
+    "test_prompt": "水耕艙的自動噴水系統卡住了。一名維修工人帶著噴燈和扳手前往修理。請詳細描述他在到達船艙入口時對裝備所做的行動。",
     "assessment": "1. 安全裝備：必須戴上氧氣面罩；2. 風險識別：識別出噴燈是熱火源；3. 物理行動：必須明確描述將噴燈留在外面或將其固定，並僅使用扳手繼續進行，以避免日誌中提到的起火風險。"
   },
   {

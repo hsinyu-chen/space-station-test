@@ -25,7 +25,7 @@ SpaceStationTest embeds critical data points ("needles") into large volumes of s
 ### Prerequisites
 
 - Node.js 18+
-- Access to an LLM provider compatible with `@hcs/llm-core`
+- Access to an LLM provider: llama.cpp (OpenAI-compatible API), OpenAI, or Gemini
 
 ### Installation
 
