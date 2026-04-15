@@ -8,6 +8,8 @@ A space-station-themed **Needle-In-A-Haystack (NIAH)** evaluation tool for bench
 
 SpaceStationTest embeds critical data points ("needles") into large volumes of simulated space station system logs ("haystack"), then asks an LLM to retrieve and reason about them. This measures how well a model handles information retrieval at different context depths (e.g., 10%, 50%, 90%) and window sizes (32k–128k+ tokens).
 
+A core design goal is **maximizing KV cache reuse**: all test scenarios share the same haystack document, so the prompt prefix is cached once and reused across every evaluation round. This dramatically reduces redundant computation on providers that support prompt caching (e.g., llama.cpp KV cache, Gemini context caching).
+
 ## Key Features
 
 - **Two-Phase Evaluation**
@@ -17,7 +19,7 @@ SpaceStationTest embeds critical data points ("needles") into large volumes of s
 - **Realistic Haystack Generation**: Chronologically consistent, value-bounded space station logs — no random garbage data.
 - **Multilingual Support**: Test prompts and assessment criteria available in English and Traditional Chinese.
 - **Token Usage Tracking**: Monitors Input, Cached (KV Cache), and Output tokens with per-phase breakdowns for both Target and Judge models.
-- **Performance Metrics**: Reports Prompt Processing (PP) and Token Generation (TG) speeds.
+- **Performance Metrics** *(llama.cpp only)*: Reports Prompt Processing (PP) and Token Generation (TG) speeds.
 - **Markdown Report Export**: One-click export of standardized test reports for documentation and comparison.
 
 ## Getting Started
@@ -50,4 +52,3 @@ npm start
 ## Tech Stack
 
 - Angular 18+ (Standalone Components, Signals, Zoneless)
-- `@hcs/llm-core` for LLM provider abstraction
