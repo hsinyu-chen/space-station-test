@@ -1,0 +1,34 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Test Detail (Score: {{ result().score }}/10)</h3>
+      <button class="close-btn" (click)="onClose()">&times;</button>
+    </div>
+    <div class="modal-body detail-view">
+      <div class="detail-section">
+        <label>Question</label>
+        <div class="code-box" [innerHTML]="result().question | markdown"></div>
+      </div>
+      @if (result().reference) {
+        <div class="detail-section">
+          <label>Reference (Needle)</label>
+          <div class="code-box" [innerHTML]="result().reference | markdown"></div>
+        </div>
+      }
+      @if (result().criteria) {
+        <div class="detail-section">
+          <label>Judging Criteria</label>
+          <div class="code-box" [innerHTML]="result().criteria | markdown"></div>
+        </div>
+      }
+      <div class="detail-section">
+        <label>Model Response</label>
+        <div class="code-box" [innerHTML]="result().answer | markdown"></div>
+      </div>
+      <div class="detail-section">
+        <label>Judge Reasoning</label>
+        <div class="code-box" [class.fail-box]="!result().isPass" [innerHTML]="result().judgeResult | markdown"></div>
+      </div>
+    </div>
+  </div>
+</div>

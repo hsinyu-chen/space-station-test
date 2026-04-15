@@ -1,0 +1,57 @@
+<section class="panel config-panel">
+  <div class="panel-header">
+    <h2>Test Configuration</h2>
+  </div>
+  <div class="config-grid">
+    <div class="field">
+      <label>Target LLM (to be tested)</label>
+      <select #target [value]="selectedTargetId()" (change)='onProfileChange(target, "target")'>
+        <option value="">Select a profile...</option>
+        @for (cfg of configs(); track cfg.id) {
+          <option [value]="cfg.id">{{ cfg.name }} ({{ cfg.provider }})</option>
+        }
+        <option value="ADD_NEW">➕ (new profile...)</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Judge LLM (to assess quality)</label>
+      <select #judge [value]="selectedJudgeId()" (change)='onProfileChange(judge, "judge")'>
+        <option value="">Select a profile...</option>
+        @for (cfg of configs(); track cfg.id) {
+          <option [value]="cfg.id">{{ cfg.name }} ({{ cfg.provider }})</option>
+        }
+        <option value="ADD_NEW">➕ (new profile...)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Language / 語言</label>
+      <select #lang (change)="updateLanguage(lang.value)" [value]="selectedLanguage()">
+        <option value="en">English</option>
+        <option value="zh">繁體中文</option>
+      </select>
+    </div>
+    <div class="field context-field">
+      <div class="field-header">
+        <label>Context Length (Tokens)</label>
+        <span class="value-display">{{ formatTokens(selectedContext()) }}</span>
+      </div>
+      <input type="range" 
+             min="0" 
+             max="1000" 
+             step="1"
+             [value]="tokensToSlider(selectedContext())"
+             (input)="onContextSliderChange($event)">
+    </div>
+  </div>
+
+  <button class="start-btn" 
+          [disabled]="!selectedTargetId() || !selectedJudgeId() || isTesting()"
+          (click)="onStart()">
+    @if (isTesting()) {
+      <span class="spinner"></span> Testing...
+    } @else {
+      Start NIAH Test
+    }
+  </button>
+</section>

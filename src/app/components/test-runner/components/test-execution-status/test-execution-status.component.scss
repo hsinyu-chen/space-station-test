@@ -1,0 +1,107 @@
+.panel {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+
+  .panel-header {
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #f8fafc;
+      margin: 0;
+    }
+  }
+}
+
+.badge {
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: #334155;
+  color: #94a3b8;
+
+  &.active {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+  }
+}
+
+.progress-container {
+  height: 4px;
+  background: #0f172a;
+  width: 100%;
+
+  .progress-bar {
+    height: 100%;
+    background: #3b82f6;
+    transition: width 0.3s ease;
+  }
+}
+
+.metrics-grid {
+  background: rgba(15, 23, 42, 0.3);
+  display: flex;
+  flex-direction: column;
+
+  .model-row {
+    display: grid;
+    grid-template-columns: 140px 100px 1fr 220px;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .model-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #94a3b8;
+      padding: 0.75rem 1.5rem;
+      background: rgba(0, 0, 0, 0.2);
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+
+    .metric {
+      padding: 0.75rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+
+      .label {
+        font-size: 0.6rem;
+        color: #64748b;
+        text-transform: uppercase;
+      }
+
+      .value {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #3b82f6;
+      }
+    }
+
+    .usage-metric {
+      border-left: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .metric-placeholder {
+      grid-column: span 3;
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+      color: #475569;
+      font-style: italic;
+    }
+  }
+}

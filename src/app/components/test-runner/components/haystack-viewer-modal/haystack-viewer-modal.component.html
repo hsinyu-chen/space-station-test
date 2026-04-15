@@ -1,0 +1,19 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-content haystack-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Generated Haystack ({{ haystack().length }} lines)</h3>
+      <div class="header-btns">
+        <button class="action-btn secondary" (click)="copyAll()">Copy All</button>
+        <button class="close-btn" (click)="onClose()">&times;</button>
+      </div>
+    </div>
+    <div class="modal-body terminal-view">
+      <cdk-virtual-scroll-viewport itemSize="22" class="haystack-viewport">
+        <div *cdkVirtualFor="let line of haystack(); let i = index" class="log-line">
+          <span class="line-num">{{ i + 1 }}</span>
+          <span class="line-content">{{ line }}</span>
+        </div>
+      </cdk-virtual-scroll-viewport>
+    </div>
+  </div>
+</div>

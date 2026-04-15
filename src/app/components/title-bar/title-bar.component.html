@@ -14,5 +14,5 @@
 </header>
 
 @if (isSettingsOpen()) {
-  <hcs-llm-settings (settingsClosed)="isSettingsOpen.set(false)"></hcs-llm-settings>
+  <hcs-llm-settings (settingsClosed)="isSettingsOpen.set(false)" [showPricing]="false"></hcs-llm-settings>
 }

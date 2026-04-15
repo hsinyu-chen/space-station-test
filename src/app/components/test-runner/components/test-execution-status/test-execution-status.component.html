@@ -1,0 +1,65 @@
+@if (niah.isTesting() || niah.results().length > 0) {
+  <section class="panel status-panel">
+    <div class="panel-header">
+      <h2>Test Execution</h2>
+      <div class="badges">
+        <span class="badge" [class.active]="niah.isTesting()">{{ niah.currentStatus() }}</span>
+      </div>
+    </div>
+
+    <div class="progress-container">
+      <div class="progress-bar" [style.width.%]="niah.currentProgress()"></div>
+    </div>
+
+    <!-- Real-time Metrics -->
+    <div class="metrics-grid multi-row">
+      <!-- Row 1: Target Model -->
+      <div class="model-row">
+        <div class="model-label">Target Model</div>
+        @if (niah.targetUsage(); as usage) {
+          <div class="metric">
+            <span class="label">PP Progress</span>
+            <span class="value">
+              {{ (usage.promptProcessed || 0) / (usage.promptTotal || 1) * 100 | number:'1.0-1' }}%
+            </span>
+          </div>
+          <div class="metric">
+            <span class="label">Speed (PP / TG)</span>
+            <span class="value">{{ usage.promptSpeed || 0 | number:'1.0-1' }} / {{ usage.completionSpeed || 0 | number:'1.0-1' }}</span>
+          </div>
+          <div class="metric usage-metric">
+            <span class="label">Total Usage (I / C / O)</span>
+            <span class="value">
+              {{ niah.targetTotalUsage().prompt }} / {{ niah.targetTotalUsage().cached }} / {{ niah.targetTotalUsage().candidates }}
+            </span>
+          </div>
+        } @else {
+          <div class="metric-placeholder">Waiting for Target Model activity...</div>
+        }
+      </div>
+
+      <!-- Row 2: Judge Model -->
+      <div class="model-row">
+        <div class="model-label">Judge Model</div>
+        @if (niah.judgeUsage(); as usage) {
+          <div class="metric">
+            <span class="label">PP Progress</span>
+            <span class="value">100%</span>
+          </div>
+          <div class="metric">
+            <span class="label">Speed (PP / TG)</span>
+            <span class="value">{{ usage.promptSpeed || 0 | number:'1.0-1' }} / {{ usage.completionSpeed || 0 | number:'1.0-1' }}</span>
+          </div>
+          <div class="metric usage-metric">
+            <span class="label">Total Usage (I / C / O)</span>
+            <span class="value">
+              {{ niah.judgeTotalUsage().prompt }} / {{ niah.judgeTotalUsage().cached }} / {{ niah.judgeTotalUsage().candidates }}
+            </span>
+          </div>
+        } @else {
+          <div class="metric-placeholder">Waiting for Judge Model activity...</div>
+        }
+      </div>
+    </div>
+  </section>
+}
