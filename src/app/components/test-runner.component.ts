@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal, OnInit, importProvidersFrom } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal, OnInit, OnDestroy, importProvidersFrom } from '@angular/core';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -267,7 +267,7 @@ import { ModalService } from '../services/modal.service';
   styleUrl: './test-runner.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TestRunnerComponent implements OnInit {
+export class TestRunnerComponent implements OnInit, OnDestroy {
   private llmManager = inject(LLMManager);
   private storage = inject(LLM_STORAGE_TOKEN);
   protected niah = inject(NiahService);
@@ -284,6 +284,8 @@ export class TestRunnerComponent implements OnInit {
   readonly copyHaystack = signal(false);
   readonly copyStandard = signal(true);
   readonly copyNeedle = signal(true);
+  
+  private unsubscribe?: () => void;
 
   readonly contextSizes = [
     { label: '4K', value: 4 * 1024 },
@@ -299,9 +301,11 @@ export class TestRunnerComponent implements OnInit {
 
   async ngOnInit() {
     await this.loadConfigs();
-    if (this.storage.onChanged) {
-      this.storage.onChanged = (newConfigs) => this.configs.set(newConfigs);
-    }
+    this.unsubscribe = this.storage.subscribe((newConfigs) => this.configs.set(newConfigs));
+  }
+
+  ngOnDestroy() {
+    this.unsubscribe?.();
   }
 
   async loadConfigs() {

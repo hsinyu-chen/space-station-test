@@ -34,6 +34,7 @@ A core design goal is **maximizing KV cache reuse**: all test scenarios share th
 ```bash
 git clone https://github.com/hsinyu-chen/space-station-test.git
 cd space-station-test
+git submodule update --init --recursive
 npm install
 ```
 
