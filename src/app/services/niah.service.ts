@@ -15,11 +15,12 @@ export interface Needle {
 export interface TestResult {
   question: string;
   answer: string;
+  thought?: string;
   judgeResult: string;
   score: number;
   isPass: boolean;
   type: 'standard' | 'needle';
-  status: 'pending' | 'fetching' | 'scoring' | 'completed'; // Added
+  status: 'pending' | 'fetching' | 'answering' | 'waiting_score' | 'completed'; // Added
   criteria?: string;
   reference?: string;
   usage?: LLMUsageMetadata;
@@ -129,7 +130,7 @@ export class NiahService {
         try {
           const question = initialResults[i].question;
           const instruction = this.i18n.translate('checksumInstruction');
-          const answer = await this.askTarget(targetConfig, haystackText, `${instruction} ${question}`);
+          const answer = await this.askTarget(targetConfig, haystackText, `${instruction} ${question}`, i);
           
           const isMatch = answer.toUpperCase().includes(item.checksum.toUpperCase());
           const judgeFeedback = isMatch 
@@ -168,13 +169,11 @@ export class NiahService {
         const statusText = this.i18n.translate('fetchingAnswers');
         this.currentStatus.set(`${statusText}: ${completedCount + 1} / ${totalQuestions}`);
         
-        this.updateResultStatus(needleIdx, 'fetching');
-
         try {
-          const answer = await this.askTarget(targetConfig, haystackText, needle.test_prompt);
+          const answer = await this.askTarget(targetConfig, haystackText, needle.test_prompt, needleIdx);
           this.updateResult(needleIdx, {
             answer,
-            status: 'fetching' // Still in fetching phase (waiting for reasoning step to move to scoring)
+            status: 'waiting_score' // Now waiting for judging
           });
         } catch (error: any) {
           console.error(`Phase 2 Target Error [Item ${i}]:`, error);
@@ -204,7 +203,7 @@ export class NiahService {
         this.currentStatus.set(`${statusText}: ${i + 1} / ${needles.length}`);
         
         try {
-          this.updateResultStatus(needleIdx, 'scoring');
+          this.updateResultStatus(needleIdx, 'waiting_score');
           const otherNeedleStrings = needles.filter((_, idx) => idx !== i).map(n => n.needle);
           const judgeRes = await this.judgeAnswer(judgeConfig, needle.needle, needle.test_prompt, currentRes.answer, needle.assessment, otherNeedleStrings);
           
@@ -240,7 +239,7 @@ export class NiahService {
     }
   }
 
-  private updateResultStatus(index: number, status: 'pending' | 'fetching' | 'scoring' | 'completed') {
+  private updateResultStatus(index: number, status: 'pending' | 'fetching' | 'answering' | 'waiting_score' | 'completed') {
     this.results.update(r => {
       const items = [...r];
       if (items[index]) items[index].status = status;
@@ -258,7 +257,7 @@ export class NiahService {
     });
   }
 
-  private async askTarget(config: LLMConfig, context: string, prompt: string): Promise<string> {
+  private async askTarget(config: LLMConfig, context: string, prompt: string, index: number): Promise<string> {
     const provider = this.llmManager.getProvider(config.provider);
     if (!provider) throw new Error(`Provider ${config.provider} not found`);
 
@@ -268,14 +267,43 @@ export class NiahService {
 
     let lastUsage: LLMUsageMetadata | undefined;
     let fullText = '';
+    let fullThought = '';
+    let hasStartedTG = false;
+
+    this.updateResultStatus(index, 'fetching');
+
     const stream = provider.generateContentStream(config.settings, contents, systemInstruction, {});
     for await (const chunk of stream) {
+      if (!hasStartedTG && (chunk.text || chunk.thought)) {
+        hasStartedTG = true;
+        this.updateResultStatus(index, 'answering');
+      }
+
+      if (chunk.thought) fullThought += chunk.thought;
       if (chunk.text && !chunk.thought) fullText += chunk.text;
+      
+      // Update result signal in real-time
+      if (chunk.text || chunk.thought) {
+        this.results.update(r => {
+          const items = [...r];
+          if (items[index]) {
+            items[index] = { 
+              ...items[index], 
+              answer: fullText, 
+              thought: fullThought 
+            };
+          }
+          return items;
+        });
+      }
+
       if (chunk.usageMetadata) {
         this.targetUsage.set(chunk.usageMetadata);
         lastUsage = chunk.usageMetadata;
       }
     }
+
+    this.updateResultStatus(index, 'waiting_score');
 
     if (lastUsage) {
       this.targetTotalUsage.update(prev => ({

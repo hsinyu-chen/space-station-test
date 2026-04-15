@@ -63,6 +63,13 @@
   white-space: pre-wrap;
   line-height: 1.6;
 
+  &.thought-box {
+    border-color: rgba(59, 130, 246, 0.3);
+    background: rgba(59, 130, 246, 0.03);
+    color: #94a3b8;
+    font-style: italic;
+  }
+
   &.fail-box {
     border-color: rgba(244, 63, 94, 0.3);
     background: rgba(244, 63, 94, 0.05);

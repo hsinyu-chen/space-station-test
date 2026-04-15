@@ -109,9 +109,14 @@
     animation: pulse 1.5s infinite ease-in-out;
   }
 
-  &.scoring {
-    background: #a855f7;
-    animation: pulse 1.5s infinite ease-in-out;
+  &.answering {
+    background: #06b6d4;  /* Cyan */
+    animation: pulse 1.2s infinite ease-in-out;
+  }
+
+  &.waiting-score {
+    background: #a855f7;  /* Purple */
+    animation: pulse 2s infinite ease-in-out;
   }
 
   &.pending {

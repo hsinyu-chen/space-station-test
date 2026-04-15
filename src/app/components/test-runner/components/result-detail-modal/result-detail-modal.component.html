@@ -21,6 +21,12 @@
           <div class="code-box" [innerHTML]="result().criteria | markdown"></div>
         </div>
       }
+      @if (result().thought) {
+        <div class="detail-section">
+          <label>Chain of Thought (CoT)</label>
+          <div class="code-box thought-box" [innerHTML]="result().thought! | markdown"></div>
+        </div>
+      }
       <div class="detail-section">
         <label>Model Response</label>
         <div class="code-box" [innerHTML]="result().answer | markdown"></div>
