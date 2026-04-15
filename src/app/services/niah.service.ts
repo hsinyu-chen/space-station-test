@@ -19,7 +19,7 @@ export interface TestResult {
   score: number;
   isPass: boolean;
   type: 'standard' | 'needle';
-  status: 'pending' | 'running' | 'completed'; // Added
+  status: 'pending' | 'fetching' | 'scoring' | 'completed'; // Added
   criteria?: string;
   reference?: string;
   usage?: LLMUsageMetadata;
@@ -123,8 +123,8 @@ export class NiahService {
         const statusText = this.i18n.translate('standardCheck');
         this.currentStatus.set(`${statusText}: ${completedCount + 1} / ${totalQuestions}`);
         
-        // Mark as running
-        this.updateResultStatus(i, 'running');
+        // Mark as fetching
+        this.updateResultStatus(i, 'fetching');
 
         try {
           const question = initialResults[i].question;
@@ -168,13 +168,13 @@ export class NiahService {
         const statusText = this.i18n.translate('fetchingAnswers');
         this.currentStatus.set(`${statusText}: ${completedCount + 1} / ${totalQuestions}`);
         
-        this.updateResultStatus(needleIdx, 'running');
+        this.updateResultStatus(needleIdx, 'fetching');
 
         try {
           const answer = await this.askTarget(targetConfig, haystackText, needle.test_prompt);
           this.updateResult(needleIdx, {
             answer,
-            status: 'running' // Still running because it needs judging
+            status: 'fetching' // Still in fetching phase (waiting for reasoning step to move to scoring)
           });
         } catch (error: any) {
           console.error(`Phase 2 Target Error [Item ${i}]:`, error);
@@ -204,6 +204,7 @@ export class NiahService {
         this.currentStatus.set(`${statusText}: ${i + 1} / ${needles.length}`);
         
         try {
+          this.updateResultStatus(needleIdx, 'scoring');
           const otherNeedleStrings = needles.filter((_, idx) => idx !== i).map(n => n.needle);
           const judgeRes = await this.judgeAnswer(judgeConfig, needle.needle, needle.test_prompt, currentRes.answer, needle.assessment, otherNeedleStrings);
           
@@ -239,7 +240,7 @@ export class NiahService {
     }
   }
 
-  private updateResultStatus(index: number, status: 'pending' | 'running' | 'completed') {
+  private updateResultStatus(index: number, status: 'pending' | 'fetching' | 'scoring' | 'completed') {
     this.results.update(r => {
       const items = [...r];
       if (items[index]) items[index].status = status;

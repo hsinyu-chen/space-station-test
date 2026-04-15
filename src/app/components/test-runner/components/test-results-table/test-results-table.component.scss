@@ -104,8 +104,13 @@
     background: #10b981;
   }
 
-  &.running {
+  &.fetching {
     background: #3b82f6;
+    animation: pulse 1.5s infinite ease-in-out;
+  }
+
+  &.scoring {
+    background: #a855f7;
     animation: pulse 1.5s infinite ease-in-out;
   }
 
@@ -130,8 +135,8 @@
   }
 }
 
-.result-row.is-running {
-  background: rgba(59, 130, 246, 0.05) !important;
+.result-row.is-active {
+  background: rgba(255, 255, 255, 0.03) !important;
 }
 
 .type-pill {

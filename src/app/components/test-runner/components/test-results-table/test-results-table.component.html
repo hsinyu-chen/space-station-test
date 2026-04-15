@@ -29,7 +29,7 @@
       </thead>
       <tbody>
         @for (res of niah.results(); track res.question) {
-        <tr class="result-row" [class.is-running]="res.status === 'running'" (click)="onResultClick(res)"
+        <tr class="result-row" [class.is-active]="res.status === 'fetching' || res.status === 'scoring'" (click)="onResultClick(res)"
           [style.cursor]="res.status === 'completed' ? 'pointer' : 'default'">
           <td><span class="type-pill" [attr.data-type]="res.type">{{ res.type }}</span></td>
           <td>
@@ -42,16 +42,17 @@
           <td>
             @if (res.status === 'completed') {
             <span class="status-pill" [class.pass]="res.isPass">{{ res.isPass ? 'PASS' : 'FAIL' }}</span>
-            } @else if (res.status === 'running') {
-            <span class="status-pill running">RUNNING...</span>
+            } @else if (res.status === 'fetching') {
+            <span class="status-pill fetching">Fetching</span>
+            } @else if (res.status === 'scoring') {
+            <span class="status-pill scoring">Scoring</span>
             } @else {
             <span class="status-pill pending">WAITING</span>
             }
           </td>
           <td class="truncate">{{ res.question }}</td>
           <td class="truncate" [style.color]="res.status === 'completed' ? 'inherit' : '#64748b'">
-            {{ res.status === 'completed' ? res.judgeResult : (res.status === 'running' ? 'Analyzing log context...' :
-            'Waiting in queue...') }}
+            {{ res.status === 'completed' ? res.judgeResult : (res.status === 'fetching' ? 'Retrieving answer from target...' : (res.status === 'scoring' ? 'Evaluating response quality...' : 'Waiting in queue...')) }}
           </td>
         </tr>
         }
