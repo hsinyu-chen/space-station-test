@@ -9,6 +9,7 @@ import { LLM_STORAGE_TOKEN } from '@hcs/llm-angular-common';
 import { NiahService, TestResult } from '../services/niah.service';
 import { Language } from '../services/i18n.service';
 import { ModalService } from '../services/modal.service';
+import { SettingsService } from '../services/settings.service';
 
 @Component({
   selector: 'app-test-runner',
@@ -24,33 +25,25 @@ import { ModalService } from '../services/modal.service';
         <div class="config-grid">
           <div class="field">
             <label>Target LLM (to be tested)</label>
-            <select #target (change)="selectedTargetId.set(target.value)">
+            <select #target [value]="selectedTargetId()" (change)="onProfileChange(target, 'target')">
               <option value="">Select a profile...</option>
               @for (cfg of configs(); track cfg.id) {
                 <option [value]="cfg.id">{{ cfg.name }} ({{ cfg.provider }})</option>
               }
+              <option value="ADD_NEW">➕ (new profile...)</option>
             </select>
           </div>
 
           <div class="field">
             <label>Judge LLM (to assess quality)</label>
-            <select #judge (change)="selectedJudgeId.set(judge.value)">
+            <select #judge [value]="selectedJudgeId()" (change)="onProfileChange(judge, 'judge')">
               <option value="">Select a profile...</option>
               @for (cfg of configs(); track cfg.id) {
                 <option [value]="cfg.id">{{ cfg.name }} ({{ cfg.provider }})</option>
               }
+              <option value="ADD_NEW">➕ (new profile...)</option>
             </select>
           </div>
-
-          <div class="field">
-            <label>Context Length (Tokens)</label>
-            <select #context (change)="selectedContext.set(+context.value)">
-              @for (size of contextSizes; track size.value) {
-                <option [value]="size.value" [selected]="size.value === 128000">{{ size.label }}</option>
-              }
-            </select>
-          </div>
-
           <div class="field">
             <label>Language / 語言</label>
             <select #lang (change)="updateLanguage(lang.value)">
@@ -58,6 +51,20 @@ import { ModalService } from '../services/modal.service';
               <option value="zh">繁體中文</option>
             </select>
           </div>
+          <div class="field context-field">
+            <div class="field-header">
+              <label>Context Length (Tokens)</label>
+              <span class="value-display">{{ formatTokens(selectedContext()) }}</span>
+            </div>
+            <input type="range" 
+                   min="0" 
+                   max="1000" 
+                   step="1"
+                   [value]="tokensToSlider(selectedContext())"
+                   (input)="onContextSliderChange($event)">
+          </div>
+
+         
         </div>
 
         <button class="start-btn" 
@@ -272,6 +279,7 @@ export class TestRunnerComponent implements OnInit, OnDestroy {
   private storage = inject(LLM_STORAGE_TOKEN);
   protected niah = inject(NiahService);
   private modalService = inject(ModalService);
+  private settingsService = inject(SettingsService);
   private sanitizer = inject(DomSanitizer);
 
   readonly configs = signal<LLMConfig[]>([]);
@@ -284,20 +292,32 @@ export class TestRunnerComponent implements OnInit, OnDestroy {
   readonly copyHaystack = signal(false);
   readonly copyStandard = signal(true);
   readonly copyNeedle = signal(true);
-  
+
   private unsubscribe?: () => void;
 
-  readonly contextSizes = [
-    { label: '4K', value: 4 * 1024 },
-    { label: '8K', value: 8 * 1024 },
-    { label: '16K', value: 16 * 1024 },
-    { label: '32K', value: 32 * 1024 },
-    { label: '64K', value: 64 * 1024 },
-    { label: '128K', value: 128 * 1024 },
-    { label: '256K', value: 256 * 1024 },
-    { label: '512K', value: 512 * 1024 },
-    { label: '1M', value: 1024 * 1024 },
-  ];
+  private readonly MIN_TOKENS = 4000;
+  private readonly MAX_TOKENS = 2000000;
+  private readonly TOKEN_STEP = 4000;
+
+  formatTokens(v: number): string {
+    if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+    if (v >= 1000) return (v / 1000).toFixed(0) + 'K';
+    return v.toString();
+  }
+
+  tokensToSlider(tokens: number): number {
+    const range = this.MAX_TOKENS - this.MIN_TOKENS;
+    const val = 1000 * Math.pow((tokens - this.MIN_TOKENS) / range, 1 / 3);
+    return Math.max(0, Math.min(1000, val));
+  }
+
+  onContextSliderChange(event: Event) {
+    const sliderVal = +(event.target as HTMLInputElement).value;
+    const range = this.MAX_TOKENS - this.MIN_TOKENS;
+    const tokens = Math.pow(sliderVal / 1000, 3) * range + this.MIN_TOKENS;
+    const snapped = Math.round(tokens / this.TOKEN_STEP) * this.TOKEN_STEP;
+    this.selectedContext.set(Math.max(this.MIN_TOKENS, Math.min(this.MAX_TOKENS, snapped)));
+  }
 
   async ngOnInit() {
     await this.loadConfigs();
@@ -317,10 +337,29 @@ export class TestRunnerComponent implements OnInit, OnDestroy {
     this.selectedLanguage.set(lang as Language);
   }
 
+  onProfileChange(select: HTMLSelectElement, type: 'target' | 'judge') {
+    const val = select.value;
+    if (val === 'ADD_NEW') {
+      // Reset visual state back to current signal value (which should be '' if they hadn't selected anything, 
+      // or the previous valid selection)
+      // Actually, the user wants it to jump back to "select a profile"
+      select.value = '';
+
+      this.settingsService.open();
+      return;
+    }
+
+    if (type === 'target') {
+      this.selectedTargetId.set(val);
+    } else {
+      this.selectedJudgeId.set(val);
+    }
+  }
+
   async start() {
     const target = this.configs().find((c: LLMConfig) => c.id === this.selectedTargetId());
     const judge = this.configs().find((c: LLMConfig) => c.id === this.selectedJudgeId());
-    
+
     if (target && judge) {
       await this.niah.runTest(target, judge, this.selectedContext(), this.selectedLanguage());
     }

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { LLMSettingsComponent } from '@hcs/llm-angular-settings';
+import { SettingsService } from '../services/settings.service';
 
 @Component({
   selector: 'app-title-bar',
@@ -29,5 +30,6 @@ import { LLMSettingsComponent } from '@hcs/llm-angular-settings';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TitleBarComponent {
-  isSettingsOpen = signal(false);
+  private settingsService = inject(SettingsService);
+  protected isSettingsOpen = this.settingsService.isSettingsOpen;
 }
