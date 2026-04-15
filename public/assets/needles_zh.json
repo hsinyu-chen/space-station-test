@@ -11,7 +11,7 @@
   },
   {
     "needle": "[INV_TRACK] HEAVY_DUTY_WELDER REMOVED FROM STORAGE_A BY ENG_MILLER. LAST KNOWN LOCATION: AIRLOCK_SUB_LEVEL_2.",
-    "test_prompt": "審計場景：一名工程師正在審查班次事件。根據反應爐危機前的庫存日誌，如果一名技術員前往 A 儲藏室取回重型焊接機，為什麼會失敗？根據追蹤數據，他們接下來必須採取的邏輯路線是什麼？",
+    "test_prompt": "審計場景：一名工程師正在審查班次事件。根據反應爐危機前的庫存日誌，如果一名技術員前往 A 儲藏室取回重型焊接機，為什麼會失敗？根據追蹤數據，他們接下來應該去哪裡才能找到該設備？",
     "assessment": "1. 狀態分析：指出焊接機在 A 儲藏室缺失；2. 路線變更：說明他們必須轉向氣閘地下 2 層 (Airlock Sub-Level 2)；3. 邏輯一致性：解釋庫存追蹤器顯示了其最後已知位置。"
   },
   {
@@ -36,7 +36,7 @@
   },
   {
     "needle": "[SUPPLY_LOG] CRITICAL: EVA_SUIT_O2_TANKS DEPLETED FROM RECENT OPERATION. ONLY 2 FULL TANKS REMAINING IN AIRLOCK_PRIMARY.",
-    "test_prompt": "歷史分析：在最終撤離命令下達前，三個雷達陣列發生故障。如果指揮部在那個時刻提議 3 人同時進行艙外活動 (EVA)，請解釋日誌中否決此計劃的具體資源限制，並說明強制性的替代程序。",
+    "test_prompt": "歷史分析：在最終撤離命令下達前，三個雷達陣列發生故障。如果指揮部在那個時刻提議 3 人同時進行艙外活動 (EVA)，請解釋日誌中否決此計劃的具體資源限制，並說明應該如何調整才能執行此 EVA 作業。",
     "assessment": "1. 資源追蹤：明確指出僅剩 2 個氧氣瓶；2. 否決決定：得出 3 人同時進行 EVA 是不可能的結論；3. 替代建議：建議分批操作、減少人數或補充供應。"
   },
   {

@@ -11,7 +11,7 @@
   },
   {
     "needle": "[INV_TRACK] HEAVY_DUTY_WELDER REMOVED FROM STORAGE_A BY ENG_MILLER. LAST KNOWN LOCATION: AIRLOCK_SUB_LEVEL_2.",
-    "test_prompt": "Audit scenario: An engineer is reviewing the shift events. Based on the inventory logs prior to the reactor crisis, if a technician went to Storage A to retrieve the heavy-duty welder, why would they fail? Trace the logical route they must take next according to the tracking data.",
+    "test_prompt": "Audit scenario: An engineer is reviewing the shift events. Based on the inventory logs prior to the reactor crisis, if a technician went to Storage A to retrieve the heavy-duty welder, why would they fail? According to the tracking data, where should they go next to find the equipment?",
     "assessment": "1. Status Analysis: Point out the welder is missing from Storage A; 2. Route Change: State they must divert to Airlock Sub-Level 2; 3. Logical Consistency: Explain that the inventory tracker indicated its last known location."
   },
   {
@@ -36,7 +36,7 @@
   },
   {
     "needle": "[SUPPLY_LOG] CRITICAL: EVA_SUIT_O2_TANKS DEPLETED FROM RECENT OPERATION. ONLY 2 FULL TANKS REMAINING IN AIRLOCK_PRIMARY.",
-    "test_prompt": "Historical Analysis: Before the final evacuation order, three radar arrays failed. If command had proposed a 3-person simultaneous EVA at that exact moment, explain the specific resource constraint in the logs that would have vetoed this plan, and state the mandatory alternative procedure.",
+    "test_prompt": "Historical Analysis: Before the final evacuation order, three radar arrays failed. If command had proposed a 3-person simultaneous EVA at that exact moment, explain the specific resource constraint in the logs that would have vetoed this plan, and describe how the operation should be adjusted to still carry out the EVA.",
     "assessment": "1. Resource Tracking: Explicitly state that only 2 oxygen tanks remain; 2. Veto Decision: Conclude that a 3-person simultaneous EVA was impossible; 3. Alternative Proposal: Suggest batching the operation, reducing the person count, or resupplying."
   },
   {
