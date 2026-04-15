@@ -279,8 +279,16 @@ export class NiahService {
         this.updateResultStatus(index, 'answering');
       }
 
-      if (chunk.thought) fullThought += chunk.thought;
-      if (chunk.text && !chunk.thought) fullText += chunk.text;
+      if (chunk.thought) {
+        // Handle both string thought and boolean thought flag (where content is in chunk.text)
+        if (typeof chunk.thought === 'string') {
+          fullThought += chunk.thought;
+        } else if (chunk.text) {
+          fullThought += chunk.text;
+        }
+      } else if (chunk.text) {
+        fullText += chunk.text;
+      }
       
       // Update result signal in real-time
       if (chunk.text || chunk.thought) {
@@ -372,9 +380,10 @@ export class NiahService {
     let md = `# SpaceStationTest NIAH Report\n\n## Summary: ${passCount}/${allResults.length} Passed | Avg Score: ${avgScore}/10\n\n`;
     
     if (filteredResults.length > 0) {
-      md += `| Type | Score | Status | Question | Feedback |\n|---|---|---|---|---|\n`;
+      md += `| Type | Score | Status | COT | Question | Feedback |\n|---|---|---|---|---|---|\n`;
       for (const r of filteredResults) {
-        md += `| ${r.type} | ${r.score} | ${r.isPass ? '✅' : '❌'} | ${r.question.substring(0, 50)} | ${r.judgeResult} |\n`;
+        const cotSnippet = r.thought ? r.thought.substring(0, 30).replace(/\n/g, ' ') + '...' : '-';
+        md += `| ${r.type} | ${r.score} | ${r.isPass ? '✅' : '❌'} | ${cotSnippet} | ${r.question.substring(0, 50)} | ${r.judgeResult} |\n`;
       }
     }
 

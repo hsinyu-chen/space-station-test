@@ -36,7 +36,7 @@ export class TestResultsTableComponent {
   }
 
   getStatusConfig(status: string) {
-    return this.STATUS_CONFIG[status];
+    return this.STATUS_CONFIG[status] || { label: 'UNKNOWN', class: 'pending', feedback: '' };
   }
 
   onResultClick(res: TestResult) {
