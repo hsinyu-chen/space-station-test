@@ -33,7 +33,7 @@
         <tr class="result-row" [class.is-active]="res.status === 'answering' || res.status === 'waiting_score'"
           (click)="onResultClick(res)"
           [style.cursor]="(res.status === 'completed' || res.status === 'answering' || res.status === 'waiting_score') ? 'pointer' : 'default'">
-          <td><span class="type-pill" [attr.data-type]="res.type">{{ res.type }}</span></td>
+          <td><span class="type-pill" [attr.data-type]="res.type">{{ getTypeLabel(res.type) }}</span></td>
           <td>
             @if (res.status === 'completed') {
             <span class="score-badge" [ngClass]="getScoreClass(res.score)">{{ res.score }}</span>

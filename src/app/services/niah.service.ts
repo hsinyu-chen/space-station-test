@@ -28,6 +28,15 @@ export interface TestResult {
   usage?: LLMUsageMetadata;
 }
 
+// Display labels for the result type — shared by the results table and the
+// markdown report so the two surfaces never drift. Internal `type` values stay
+// stable; only the human-facing wording lives here.
+export const TYPE_LABELS: Record<TestResult['type'], string> = {
+  standard: 'Direct Recall',
+  leak: 'Indirect Recall',
+  needle: 'Reasoning'
+};
+
 
 @Injectable({
   providedIn: 'root'
@@ -479,7 +488,7 @@ export class NiahService {
       md += `| Type | Score | Status | COT | Question | Feedback |\n|---|---|---|---|---|---|\n`;
       for (const r of filteredResults) {
         const cotSnippet = r.thought ? r.thought.substring(0, 30).replace(/\n/g, ' ') + '...' : '-';
-        md += `| ${r.type} | ${r.score} | ${r.isPass ? '✅' : '❌'} | ${cotSnippet} | ${r.question.substring(0, 50)} | ${r.judgeResult} |\n`;
+        md += `| ${TYPE_LABELS[r.type]} | ${r.score} | ${r.isPass ? '✅' : '❌'} | ${cotSnippet} | ${r.question.substring(0, 50)} | ${r.judgeResult} |\n`;
       }
     }
 

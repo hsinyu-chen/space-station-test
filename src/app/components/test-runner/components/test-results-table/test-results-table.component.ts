@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, model, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NiahService, TestResult } from '../../../../services/niah.service';
+import { NiahService, TestResult, TYPE_LABELS } from '../../../../services/niah.service';
 
 @Component({
   selector: 'app-test-results-table',
@@ -38,6 +38,10 @@ export class TestResultsTableComponent {
 
   getStatusConfig(status: string) {
     return this.STATUS_CONFIG[status] || { label: 'UNKNOWN', class: 'pending', feedback: '' };
+  }
+
+  getTypeLabel(type: TestResult['type']): string {
+    return TYPE_LABELS[type];
   }
 
   onResultClick(res: TestResult) {
