@@ -37,7 +37,6 @@ export const TYPE_LABELS: Record<TestResult['type'], string> = {
   needle: 'Reasoning'
 };
 
-
 @Injectable({
   providedIn: 'root'
 })
