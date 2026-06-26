@@ -44,6 +44,7 @@ export class TestRunnerComponent implements OnInit, OnDestroy {
   readonly showHaystack = signal(false);
   readonly copyHaystack = signal(false);
   readonly copyStandard = signal(true);
+  readonly copyLeak = signal(true);
   readonly copyNeedle = signal(true);
 
   private unsubscribe?: () => void;
@@ -90,6 +91,7 @@ export class TestRunnerComponent implements OnInit, OnDestroy {
     const options = {
       haystack: this.copyHaystack(),
       standard: this.copyStandard(),
+      leak: this.copyLeak(),
       needle: this.copyNeedle()
     };
     const md = this.niah.generateReportMarkdown(options);

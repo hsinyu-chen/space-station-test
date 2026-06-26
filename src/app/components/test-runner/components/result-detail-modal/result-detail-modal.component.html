@@ -9,6 +9,12 @@
         <label>Question</label>
         <div class="code-box" [innerHTML]="result().question | markdown"></div>
       </div>
+      @if (result().sentPrompt) {
+        <div class="detail-section">
+          <label>Full Prompt Sent (user message — haystack context excluded)</label>
+          <div class="code-box" [innerHTML]="result().sentPrompt! | markdown"></div>
+        </div>
+      }
       @if (result().reference) {
         <div class="detail-section">
           <label>Reference (Needle)</label>

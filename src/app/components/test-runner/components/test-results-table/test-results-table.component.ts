@@ -24,6 +24,7 @@ export class TestResultsTableComponent {
   copyHaystack = model.required<boolean>();
   copyStandard = model.required<boolean>();
   copyNeedle = model.required<boolean>();
+  copyLeak = model.required<boolean>();
 
   selectResult = output<TestResult>();
   viewHaystack = output<void>();

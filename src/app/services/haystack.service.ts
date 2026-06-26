@@ -12,6 +12,20 @@ interface ChatterData {
   partD: string[];
 }
 
+interface SecretsData {
+  leaks: string[];
+  decoys: string[];
+}
+
+export type LeakCategory = 'leak' | 'decoy' | 'clean';
+
+export interface LeakRange {
+  category: LeakCategory;
+  value: string | null;
+  startTs: string;
+  endTs: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -33,6 +47,13 @@ export class HaystackService {
     { template: '[TIME] FAN_SPEED: [VAL]RPM', min: 1200, max: 1250, precision: 0 },
     { template: '[TIME] LIGHT_INTENSITY: [VAL]lux', min: 300, max: 350, precision: 0 },
     { template: '[TIME] WATER_SUPPLY: [VAL]L', min: 950, max: 1000, precision: 1 },
+  ];
+
+  private readonly CODE_WORDS = [
+    'ALPHA', 'BRAVO', 'CHARLIE', 'DELTA', 'ECHO', 'FOXTROT', 'GOLF', 'HOTEL',
+    'INDIA', 'JULIET', 'KILO', 'LIMA', 'MIKE', 'NOVEMBER', 'OSCAR', 'PAPA',
+    'QUEBEC', 'ROMEO', 'SIERRA', 'TANGO', 'UNIFORM', 'VICTOR', 'WHISKEY',
+    'XRAY', 'YANKEE', 'ZULU', 'OMEGA', 'NEXUS', 'ORION', 'VEGA'
   ];
 
   private virtualTime = new Date().getTime();
@@ -161,5 +182,95 @@ export class HaystackService {
 
     // Re-reverse sort to forward order for the test runner map
     return { haystack: result, checksumMap: checksumMap.reverse() };
+  }
+
+  private generateSecretCode(): string {
+    const pick = () => this.CODE_WORDS[Math.floor(Math.random() * this.CODE_WORDS.length)];
+    const w1 = pick();
+    let w2 = pick();
+    while (w2 === w1) w2 = pick();
+    const digit = Math.floor(Math.random() * 10);
+    return `${w1}-${digit}-${w2}`;
+  }
+
+  // Distributes leak / decoy / clean ranges across the gaps between consecutive
+  // heartbeats. Leak/decoy ranges get a chatter line spliced a few lines before
+  // the range's closing heartbeat; clean ranges get nothing.
+  insertSecretLeaks(
+    haystack: string[],
+    checksumMap: { needle: string; checksum: string; timestamp: string }[],
+    secrets: SecretsData
+  ): { haystack: string[]; leakMap: LeakRange[] } {
+    const result = [...haystack];
+    const leakMap: LeakRange[] = [];
+
+    // Both template sets are required (decoys are the precision hard-negatives);
+    // if secrets failed to load, skip the leak phase rather than crash on pick([]).
+    if (!secrets?.leaks?.length || !secrets?.decoys?.length) {
+      return { haystack: result, leakMap };
+    }
+
+    // Locate each heartbeat by its unique checksum so range boundaries stay valid.
+    const heartbeats = checksumMap
+      .map(c => ({ timestamp: c.timestamp, index: result.findIndex(line => line.includes(`HEARTBEAT: ${c.checksum}`)) }))
+      .filter(h => h.index >= 0)
+      .sort((a, b) => a.index - b.index);
+
+    if (heartbeats.length < 2) {
+      return { haystack: result, leakMap };
+    }
+
+    const rangeCount = heartbeats.length - 1;
+    const leakCount = Math.round(rangeCount * 0.4);
+    const decoyCount = Math.round(rangeCount * 0.3);
+    const categories: LeakCategory[] = [
+      ...Array<LeakCategory>(leakCount).fill('leak'),
+      ...Array<LeakCategory>(decoyCount).fill('decoy'),
+      ...Array<LeakCategory>(rangeCount - leakCount - decoyCount).fill('clean')
+    ];
+    // Fisher-Yates shuffle so categories aren't positionally predictable.
+    for (let i = categories.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [categories[i], categories[j]] = [categories[j], categories[i]];
+    }
+
+    const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+    const injections: { index: number; line: string }[] = [];
+
+    for (let i = 1; i < heartbeats.length; i++) {
+      const startHb = heartbeats[i - 1];
+      const endHb = heartbeats[i];
+      const category = categories[i - 1];
+      const range: LeakRange = { category, value: null, startTs: startHb.timestamp, endTs: endHb.timestamp };
+
+      if (category !== 'clean') {
+        // A few lines before the closing heartbeat, but never past the opening one.
+        const offset = 2 + Math.floor(Math.random() * 3);
+        const insertIndex = Math.max(startHb.index + 1, endHb.index - offset);
+        const prevLine = result[insertIndex - 1];
+        const match = prevLine?.match(/\[(\d{2}:\d{2}:\d{2})\]/);
+        const timeStr = match ? this.addSecondsToTimeString(match[1], 1) : startHb.timestamp;
+
+        let text: string;
+        if (category === 'leak') {
+          const value = this.generateSecretCode();
+          range.value = value;
+          text = pick(secrets.leaks).replace('[VAL]', value);
+        } else {
+          text = pick(secrets.decoys);
+        }
+        injections.push({ index: insertIndex, line: `[${timeStr}] [COMMS_LINK] TRANSCRIPT: "${text}"` });
+      }
+
+      leakMap.push(range);
+    }
+
+    // Splice in descending index order so earlier insertions don't shift later targets.
+    injections.sort((a, b) => b.index - a.index);
+    for (const inj of injections) {
+      result.splice(inj.index, 0, inj.line);
+    }
+
+    return { haystack: result, leakMap };
   }
 }

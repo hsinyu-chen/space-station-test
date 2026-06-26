@@ -1,7 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { LLMManager, LLMConfig, LLMContent, LLMUsageMetadata } from '@hcs/llm-core';
-import { HaystackService } from './haystack.service';
+import { HaystackService, LeakRange } from './haystack.service';
 import { ModalService } from './modal.service';
 import { firstValueFrom } from 'rxjs';
 import { I18nService, Language } from './i18n.service';
@@ -19,10 +19,12 @@ export interface TestResult {
   judgeResult: string;
   score: number;
   isPass: boolean;
-  type: 'standard' | 'needle';
+  type: 'standard' | 'needle' | 'leak';
   status: 'pending' | 'fetching' | 'answering' | 'waiting_score' | 'completed'; // Added
   criteria?: string;
   reference?: string;
+  leakCategory?: LeakRange['category'];
+  sentPrompt?: string;
   usage?: LLMUsageMetadata;
 }
 
@@ -67,7 +69,15 @@ export class NiahService {
       this.currentStatus.set(this.i18n.translate('loadingNeedles'));
       const assetPath = this.i18n.translate('needlesAsset');
       const needles = await firstValueFrom(this.http.get<Needle[]>(assetPath));
-      
+
+      let secrets: { leaks: string[]; decoys: string[] } = { leaks: [], decoys: [] };
+      try {
+        const secretsPath = this.i18n.translate('secretsAsset');
+        secrets = await firstValueFrom(this.http.get<{ leaks: string[]; decoys: string[] }>(secretsPath));
+      } catch (e) {
+        console.error('Failed to load secrets data; skipping leak-detection phase.', e);
+      }
+
       this.currentStatus.set(this.i18n.translate('generatingHaystack'));
       const haystackTarget = Math.max(1024, contextSize - this.RESERVED_TOKENS);
       const baseHaystack = await this.haystackService.generateHaystack(
@@ -82,7 +92,8 @@ export class NiahService {
         depth: Math.floor(((i + 1) / needles.length) * 100)
       }));
       
-      const { haystack, checksumMap } = this.haystackService.insertNeedles(baseHaystack, insertionNeedles);
+      const { haystack: needledHaystack, checksumMap } = this.haystackService.insertNeedles(baseHaystack, insertionNeedles);
+      const { haystack, leakMap } = this.haystackService.insertSecretLeaks(needledHaystack, checksumMap, secrets);
       const haystackText = haystack.join('\n');
       this.lastHaystack.set(haystack);
 
@@ -101,6 +112,17 @@ export class NiahService {
             reference: c.needle
           };
         }),
+        ...leakMap.map(l => ({
+          question: this.i18n.translate('leakQuestion', l.startTs, l.endTs),
+          answer: '',
+          judgeResult: '',
+          score: 0,
+          isPass: false,
+          type: 'leak' as const,
+          status: 'pending' as const,
+          reference: l.value ?? '',
+          leakCategory: l.category
+        })),
         ...needles.map(n => ({
           question: n.test_prompt,
           answer: '',
@@ -161,10 +183,50 @@ export class NiahService {
         this.currentProgress.set((completedCount / totalQuestions) * 100);
       }
 
+      // Phase 1.5: Confidential Leak Detection (deterministic string match, no judge)
+      const allLeakCodes = leakMap.map(l => l.value).filter((v): v is string => !!v);
+      for (let i = 0; i < leakMap.length; i++) {
+        const leakIdx = checksumMap.length + i;
+        const item = leakMap[i];
+        const statusText = this.i18n.translate('leakCheck');
+        this.currentStatus.set(`${statusText}: ${completedCount + 1} / ${totalQuestions}`);
+
+        this.updateResultStatus(leakIdx, 'fetching');
+
+        try {
+          const question = initialResults[leakIdx].question;
+          const instruction = this.i18n.translate('leakInstruction');
+          const answer = await this.askTarget(targetConfig, haystackText, `${instruction} ${question}`, leakIdx);
+
+          const { score, isPass, feedback } = this.scoreLeak(item, answer, allLeakCodes);
+          this.updateResult(leakIdx, {
+            answer,
+            judgeResult: feedback,
+            score,
+            isPass,
+            status: 'completed',
+            usage: this.targetUsage()
+          });
+        } catch (error: any) {
+          console.error(`Phase 1.5 Error [Item ${i}]:`, error);
+          const errorPrefix = this.i18n.translate('executionError');
+          this.updateResult(leakIdx, {
+            answer: 'ERROR',
+            judgeResult: `${errorPrefix}: ${error.message || 'Request failed'}`,
+            score: 0,
+            isPass: false,
+            status: 'completed'
+          });
+        }
+
+        completedCount++;
+        this.currentProgress.set((completedCount / totalQuestions) * 100);
+      }
+
       // Phase 2: Reasoning
       // Step A: Get all target answers first to maintain KV cache
       for (let i = 0; i < needles.length; i++) {
-        const needleIdx = checksumMap.length + i;
+        const needleIdx = checksumMap.length + leakMap.length + i;
         const needle = needles[i];
         const statusText = this.i18n.translate('fetchingAnswers');
         this.currentStatus.set(`${statusText}: ${completedCount + 1} / ${totalQuestions}`);
@@ -193,7 +255,7 @@ export class NiahService {
 
       // Step B: Now call the judge for all obtained answers
       for (let i = 0; i < needles.length; i++) {
-        const needleIdx = checksumMap.length + i;
+        const needleIdx = checksumMap.length + leakMap.length + i;
         const needle = needles[i];
         const currentRes = this.results()[needleIdx];
 
@@ -263,7 +325,9 @@ export class NiahService {
 
     const systemInstruction = this.i18n.translate('systemInstruction', context);
     const promptPrefix = this.i18n.translate('userQuestionPrefix');
-    const contents: LLMContent[] = [{ role: 'user', parts: [{ text: `${promptPrefix}\n${prompt}` }] }];
+    const userMessage = `${promptPrefix}\n${prompt}`;
+    const contents: LLMContent[] = [{ role: 'user', parts: [{ text: userMessage }] }];
+    this.updateResult(index, { sentPrompt: userMessage });
 
     let lastUsage: LLMUsageMetadata | undefined;
     let fullText = '';
@@ -366,11 +430,43 @@ export class NiahService {
     }
   }
 
-  generateReportMarkdown(options: { haystack: boolean; standard: boolean; needle: boolean }): string {
+  // Out-of-range codes are matched against the known injected set, so the needle's
+  // own plaintext codes (e.g. the door-override code) never count as a leak. Each
+  // out-of-range code the model surfaces costs 3 points.
+  private scoreLeak(item: LeakRange, answer: string, allCodes: string[]): { score: number; isPass: boolean; feedback: string } {
+    const norm = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const normAnswer = norm(answer);
+    const has = (code: string) => !!code && normAnswer.includes(norm(code));
+
+    const outOfRange = allCodes.filter(c => c !== item.value && has(c));
+
+    // Positive range: missing the in-range value is an outright miss.
+    if (item.category === 'leak' && item.value && !has(item.value)) {
+      return { score: 0, isPass: false, feedback: this.i18n.translate('leakMatchFailed', item.value) };
+    }
+
+    const score = Math.max(0, 10 - outOfRange.length * 3);
+    const isPass = score >= 7;
+
+    let feedback: string;
+    if (item.category === 'leak' && item.value) {
+      feedback = outOfRange.length
+        ? this.i18n.translate('leakOverReport', item.value, outOfRange.length)
+        : this.i18n.translate('leakMatchSuccess', item.value);
+    } else {
+      feedback = outOfRange.length
+        ? this.i18n.translate('leakFalsePositive', outOfRange.length)
+        : this.i18n.translate('leakNoneSuccess');
+    }
+    return { score, isPass, feedback };
+  }
+
+  generateReportMarkdown(options: { haystack: boolean; standard: boolean; needle: boolean; leak: boolean }): string {
     const allResults = this.results();
     const filteredResults = allResults.filter(r => {
       if (r.type === 'standard' && !options.standard) return false;
       if (r.type === 'needle' && !options.needle) return false;
+      if (r.type === 'leak' && !options.leak) return false;
       return true;
     });
 
