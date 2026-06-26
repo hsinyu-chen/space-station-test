@@ -25,7 +25,6 @@ export interface TestResult {
   reference?: string;
   leakCategory?: LeakRange['category'];
   sentPrompt?: string;
-  usage?: LLMUsageMetadata;
 }
 
 // Display labels for the result type — shared by the results table and the
@@ -172,8 +171,7 @@ export class NiahService {
             judgeResult: judgeFeedback,
             score: isMatch ? 10 : 0,
             isPass: isMatch,
-            status: 'completed',
-            usage: this.targetUsage()
+            status: 'completed'
           });
         } catch (error: any) {
           console.error(`Phase 1 Error [Item ${i}]:`, error);
@@ -212,8 +210,7 @@ export class NiahService {
             judgeResult: feedback,
             score,
             isPass,
-            status: 'completed',
-            usage: this.targetUsage()
+            status: 'completed'
           });
         } catch (error: any) {
           console.error(`Phase 1.5 Error [Item ${i}]:`, error);
@@ -281,8 +278,7 @@ export class NiahService {
             judgeResult: judgeRes.reason,
             score: judgeRes.score,
             isPass: judgeRes.score >= 7,
-            status: 'completed',
-            usage: this.targetUsage()
+            status: 'completed'
           });
         } catch (error: any) {
           console.error(`Phase 2 Judge Error [Item ${i}]:`, error);
