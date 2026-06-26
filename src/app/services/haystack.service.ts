@@ -95,11 +95,18 @@ export class HaystackService {
     return Array.from({ length: targetLines }, () => this.getRandomLog());
   }
 
+  // Date-stamped (MM-DD HH:mm:ss) so timestamps stay globally unique across a
+  // multi-day haystack — a long log wraps past 24h and bare HH:mm:ss would repeat.
+  private formatTimestamp(epochMs: number): string {
+    const [datePart, timePart] = new Date(epochMs).toISOString().split('T');
+    return `${datePart.slice(5)} ${timePart.split('.')[0]}`;
+  }
+
   private addSecondsToTimeString(timeStr: string, seconds: number): string {
-    // We must use a fixed date and UTC to avoid local timezone jumps
-    const date = new Date(`2026-04-14T${timeStr}Z`);
+    // timeStr is "MM-DD HH:mm:ss"; reattach the fixed year, fixed UTC to avoid TZ jumps.
+    const date = new Date(`2026-${timeStr.replace(' ', 'T')}Z`);
     date.setUTCSeconds(date.getUTCSeconds() + seconds);
-    return date.toISOString().split('T')[1].split('.')[0];
+    return this.formatTimestamp(date.getTime());
   }
 
   private getNextTimeJump(): number {
@@ -127,9 +134,7 @@ export class HaystackService {
   getRandomLog(): string {
     // Randomized increment 5-10s
     this.virtualTime += this.getNextTimeJump();
-    const date = new Date(this.virtualTime);
-    const time = date.toISOString().split('T')[1].split('.')[0];
-    const timeStr = `[${time}]`;
+    const timeStr = `[${this.formatTimestamp(this.virtualTime)}]`;
 
     // 20% chance to be procedural chatter
     if (Math.random() < 0.2) {
@@ -143,7 +148,6 @@ export class HaystackService {
     const config = this.TEMPLATES[Math.floor(Math.random() * this.TEMPLATES.length)];
     const val = (Math.random() * (config.max - config.min) + config.min).toFixed(config.precision ?? 2);
     
-    // Wrap the replaced time in brackets to match [HH:mm:ss] format
     return config.template.replace('[TIME]', timeStr).replace('[VAL]', val);
   }
 
@@ -163,10 +167,10 @@ export class HaystackService {
 
       // Time Logic: Derive from neighbors to prevent 'Time Paradox'
       // Use the internal virtual clock for more stability if neighbors fail
-      let timeStr = new Date(this.virtualTime).toISOString().split('T')[1].split('.')[0];
+      let timeStr = this.formatTimestamp(this.virtualTime);
       const prevLine = result[index - 1];
       if (prevLine) {
-        const match = prevLine.match(/\[(\d{2}:\d{2}:\d{2})\]/);
+        const match = prevLine.match(/\[(\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]/);
         if (match) {
           timeStr = this.addSecondsToTimeString(match[1], 2);
         }
@@ -248,7 +252,7 @@ export class HaystackService {
         const offset = 2 + Math.floor(Math.random() * 3);
         const insertIndex = Math.max(startHb.index + 1, endHb.index - offset);
         const prevLine = result[insertIndex - 1];
-        const match = prevLine?.match(/\[(\d{2}:\d{2}:\d{2})\]/);
+        const match = prevLine?.match(/\[(\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]/);
         const timeStr = match ? this.addSecondsToTimeString(match[1], 1) : startHb.timestamp;
 
         let text: string;
