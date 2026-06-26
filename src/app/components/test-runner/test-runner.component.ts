@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LLMConfig } from '@hcs/llm-core';
 import { LLM_STORAGE_TOKEN } from '@hcs/llm-angular-common';
-import { NiahService, TestResult } from '../../services/niah.service';
+import { NiahService } from '../../services/niah.service';
 import { Language } from '../../services/i18n.service';
 import { ModalService } from '../../services/modal.service';
 import { SettingsService } from '../../services/settings.service';
@@ -40,7 +40,13 @@ export class TestRunnerComponent implements OnInit, OnDestroy {
   readonly selectedJudgeId = signal<string>('');
   readonly selectedContext = signal<number>(128000);
   readonly selectedLanguage = signal<Language>('en');
-  readonly selectedResult = signal<TestResult | null>(null);
+  // Hold the selected row's identity, not a snapshot: niah replaces each result
+  // object immutably while streaming, so a captured reference would freeze.
+  readonly selectedKey = signal<string | null>(null);
+  readonly selectedResult = computed(() => {
+    const key = this.selectedKey();
+    return key === null ? null : this.niah.results().find(r => r.question === key) ?? null;
+  });
   readonly showHaystack = signal(false);
   readonly copyHaystack = signal(false);
   readonly copyStandard = signal(true);

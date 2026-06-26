@@ -20,7 +20,7 @@
     [(copyStandard)]="copyStandard"
     [(copyLeak)]="copyLeak"
     [(copyNeedle)]="copyNeedle"
-    (selectResult)="selectedResult.set($event)"
+    (selectResult)="selectedKey.set($event.question)"
     (viewHaystack)="showHaystack.set(true)"
     (copyReport)="copyReport()">
   </app-test-results-table>
@@ -29,7 +29,7 @@
   @if (selectedResult(); as res) {
     <app-result-detail-modal
       [result]="res"
-      (close)="selectedResult.set(null)">
+      (close)="selectedKey.set(null)">
     </app-result-detail-modal>
   }
 
